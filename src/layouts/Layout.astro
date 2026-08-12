@@ -6,7 +6,7 @@ interface Props {
   title?: string;
 }
 
-const { title = "NATURAL INGREDIENTS - High Quality Natural Raw Materials" } = Astro.props;
+const { title = "Magna Ingredients - High Quality Natural Raw Materials" } = Astro.props;
 ---
 
 <!doctype html>
@@ -33,6 +33,74 @@ const { title = "NATURAL INGREDIENTS - High Quality Natural Raw Materials" } = A
 
     <!-- Footer ditampilkan di bawah semua halaman -->
     <Footer />
+
+    <!-- SCRIPT MULTI-BAHASA GLOBAL (AUTOSWITCH) -->
+    <script is:inline>
+      // 1. Fungsi Utama untuk Mengubah Bahasa Teks di Seluruh Halaman
+      function applyLanguage(lang) {
+        localStorage.setItem('selectedLanguage', lang);
+        document.documentElement.lang = lang;
+
+        // Cari semua elemen yang memiliki atribut data-lang-id & data-lang-en
+        const elements = document.querySelectorAll('[data-lang-id][data-lang-en]');
+        
+        elements.forEach((el) => {
+          const textId = el.getAttribute('data-lang-id');
+          const textEn = el.getAttribute('data-lang-en');
+
+          if (lang === 'en' && textEn) {
+            // Jika elemen berupa input/textarea placeholder
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.setAttribute('placeholder', textEn);
+            } else {
+              el.textContent = textEn;
+            }
+          } else if (lang === 'id' && textId) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+              el.setAttribute('placeholder', textId);
+            } else {
+              el.textContent = textId;
+            }
+          }
+        });
+
+        // Update status aktif pada tombol switcher bahasa di Navbar (jika ada)
+        const langBtns = document.querySelectorAll('.lang-btn, [data-lang]');
+        langBtns.forEach((btn) => {
+          const btnLang = btn.getAttribute('data-lang');
+          if (btnLang === lang) {
+            btn.classList.add('active');
+          } else if (btnLang) {
+            btn.classList.remove('active');
+          }
+        });
+      }
+
+      // 2. Jalankan Penerjemah Otomatis Saat DOM / Halaman Siap
+      function initLanguage() {
+        const savedLang = localStorage.getItem('selectedLanguage') || 'id';
+        applyLanguage(savedLang);
+
+        // Pasang Event Listener pada Tombol Bahasa di Navbar/Footer
+        document.addEventListener('click', (e) => {
+          const target = e.target.closest('[data-lang]');
+          if (target) {
+            e.preventDefault();
+            const chosenLang = target.getAttribute('data-lang');
+            if (chosenLang) {
+              applyLanguage(chosenLang);
+            }
+          }
+        });
+      }
+
+      // Inisialisasi saat pertama kali dimuat
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initLanguage);
+      } else {
+        initLanguage();
+      }
+    </script>
   </body>
 </html>
 
