@@ -1,0 +1,337 @@
+---
+---
+
+<section id="contact" class="contact-section">
+  <div class="container">
+    <!-- SECTION HEADER -->
+    <div class="section-header">
+      <span class="section-tag" data-lang-id="HUBUNGI KAMI" data-lang-en="GET IN TOUCH">HUBUNGI KAMI</span>
+      <h2 data-lang-id="Mari Berdiskusi Mengenai Kebutuhan Anda" data-lang-en="Let's Discuss Your Ingredients Need">
+        Mari Berdiskusi Mengenai Kebutuhan Anda
+      </h2>
+      <p data-lang-id="Tim ahli kami siap membantu Anda mendapatkan pasokan bahan baku alam berkualitas tinggi untuk kebutuhan formulasi dan produksi." data-lang-en="Our expert team is ready to help you source high-quality natural raw materials for your formulation and production needs.">
+        Tim ahli kami siap membantu Anda mendapatkan pasokan bahan baku alam berkualitas tinggi untuk kebutuhan formulasi dan produksi.
+      </p>
+    </div>
+
+    <div class="contact-wrapper">
+      <!-- LEFT COLUMN: CONTACT INFORMATION -->
+      <div class="contact-info">
+        <div class="info-card">
+          <h3 data-lang-id="Informasi Kontak" data-lang-en="Contact Information">Informasi Kontak</h3>
+          <p class="info-desc" data-lang-id="Silakan hubungi kami melalui saluran berikut atau isi formulir di samping." data-lang-en="Feel free to reach out via the following channels or fill out the form.">
+            Silakan hubungi kami melalui saluran berikut atau isi formulir di samping.
+          </p>
+
+          <div class="info-list">
+            <div class="info-item">
+              <div class="icon-box">📍</div>
+              <div>
+                <h4 data-lang-id="Alamat Kantor & Pabrik" data-lang-en="Office & Factory Address">Alamat Kantor & Pabrik</h4>
+                <p>Jl. Industri Alami No. 88, Kawasan Industri, Bogor, Jawa Barat 16810</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="icon-box">✉️</div>
+              <div>
+                <h4 data-lang-id="Email Pertanyaan" data-lang-en="Email Inquiry">Email Pertanyaan</h4>
+                <p>info@naturalingredients.com</p>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="icon-box">📞</div>
+              <div>
+                <h4 data-lang-id="Telepon & WhatsApp" data-lang-en="Phone & WhatsApp">Telepon & WhatsApp</h4>
+                <p>+62 21 8459 1234 / +62 812 8888 9999</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- OPERATIONAL HOURS -->
+          <div class="hours-box">
+            <h4 data-lang-id="Jam Operasional" data-lang-en="Operating Hours">Jam Operasional</h4>
+            <p data-lang-id="Senin - Jumat: 08.00 - 17.00 WIB" data-lang-en="Monday - Friday: 08:00 - 17:00 WIB">
+              Senin - Jumat: 08.00 - 17.00 WIB
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: FORM -->
+      <div class="contact-form-container">
+        <form class="contact-form" onsubmit="event.preventDefault(); alert('Pesan berhasil terkirim!');">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nama" data-lang-id="Nama Lengkap *" data-lang-en="Full Name *">Nama Lengkap *</label>
+              <input type="text" id="nama" placeholder="Masukkan nama lengkap" required />
+            </div>
+
+            <div class="form-group">
+              <label for="perusahaan" data-lang-id="Nama Perusahaan" data-lang-en="Company Name">Nama Perusahaan</label>
+              <input type="text" id="perusahaan" placeholder="PT Industri Sehat" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email" data-lang-id="Alamat Email *" data-lang-en="Email Address *">Alamat Email *</label>
+              <input type="email" id="email" placeholder="nama@perusahaan.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="telepon" data-lang-id="Nomor Telepon / WA *" data-lang-en="Phone / WhatsApp *">Nomor Telepon / WA *</label>
+              <input type="tel" id="telepon" placeholder="+62 812xxxxxxx" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="kategori" data-lang-id="Kategori Kebutuhan *" data-lang-en="Inquiry Category *">Kategori Kebutuhan *</label>
+            <select id="kategori" required>
+              <option value="" data-lang-id="-- Pilih Kategori --" data-lang-en="-- Select Category --">-- Pilih Kategori --</option>
+              <option value="lokal" data-lang-id="Pasar Lokal (Domestik)" data-lang-en="Local Market (Domestic)">Pasar Lokal (Domestik)</option>
+              <option value="ekspor" data-lang-id="Pasar Ekspor (Internasional)" data-lang-en="Export Market (International)">Pasar Ekspor (Internasional)</option>
+              <option value="sampel" data-lang-id="Permintaan Sampel Produk" data-lang-en="Product Sample Request">Permintaan Sampel Produk</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pesan" data-lang-id="Pesan / Spesifikasi *" data-lang-en="Message / Requirement Details *">Pesan / Spesifikasi *</label>
+            <textarea id="pesan" rows="4" placeholder="Jelaskan detail kebutuhan bahan baku Anda..." required></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span data-lang-id="Kirim Pesan" data-lang-en="Send Message">Kirim Pesan</span>
+            <span class="btn-icon">➔</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  :root {
+    --c-primary: #1b4332;
+    --c-secondary: #2d6a4f;
+    --c-accent: #52b788;
+    --c-light-bg: #f8faf8;
+    --c-card-bg: #ffffff;
+    --c-text: #2c3e50;
+    --c-text-muted: #64748b;
+    --c-border: #e2e8f0;
+    --c-radius: 12px;
+  }
+
+  .contact-section {
+    padding: 4rem 0;
+    background-color: var(--c-light-bg);
+    color: var(--c-text);
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* HEADER */
+  .section-header {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 3rem auto;
+  }
+
+  .section-tag {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--c-secondary);
+    background-color: #e8f5e9;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--c-primary);
+    line-height: 1.25;
+    margin-bottom: 0.8rem;
+  }
+
+  .section-header p {
+    font-size: 1rem;
+    color: var(--c-text-muted);
+    line-height: 1.6;
+  }
+
+  /* LAYOUT */
+  .contact-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  /* INFO KIRI */
+  .info-card {
+    background-color: var(--c-primary);
+    color: #ffffff;
+    padding: 2.5rem;
+    border-radius: var(--c-radius);
+    box-shadow: 0 10px 25px rgba(27, 67, 50, 0.12);
+  }
+
+  .info-card h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+  }
+
+  .info-desc {
+    font-size: 0.925rem;
+    color: #b7e4c7;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+  }
+
+  .info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .info-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .icon-box {
+    width: 42px;
+    height: 42px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .info-item h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--c-accent);
+    margin-bottom: 0.2rem;
+  }
+
+  .info-item p {
+    font-size: 0.9rem;
+    color: #e8f5e9;
+    line-height: 1.4;
+  }
+
+  .hours-box {
+    background-color: rgba(255, 255, 255, 0.06);
+    padding: 1.25rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--c-accent);
+  }
+
+  .hours-box h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+  }
+
+  .hours-box p {
+    font-size: 0.85rem;
+    color: #b7e4c7;
+  }
+
+  /* FORM KANAN */
+  .contact-form-container {
+    background-color: var(--c-card-bg);
+    padding: 2.5rem;
+    border-radius: var(--c-radius);
+    border: 1px solid var(--c-border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--c-primary);
+    margin-bottom: 0.4rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid var(--c-border);
+    border-radius: 8px;
+    background-color: #fafafa;
+    color: var(--c-text);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--c-secondary);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 0.9rem 1.5rem;
+    background-color: var(--c-secondary);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background-color 0.25s ease;
+  }
+
+  .btn-submit:hover {
+    background-color: var(--c-primary);
+  }
+
+  @media (max-width: 900px) {
+    .contact-wrapper,
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

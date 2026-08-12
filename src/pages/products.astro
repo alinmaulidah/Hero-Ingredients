@@ -1,0 +1,549 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { productGroups } from '../data/products';
+
+const CLIENT_KEY = import.meta.env.PUBLIC_MIDTRANS_CLIENT_KEY;
+---
+
+<Layout title="Katalog Produk - Magna Ingredients">
+  <!-- Midtrans Snap SDK -->
+<script src="https://app.midtrans.com/snap/snap.js" data-client-key={CLIENT_KEY}></script>
+  <main class="products-page">
+    <section class="catalog-section">
+      <div class="container">
+        
+        <!-- TOOLBAR MATA UANG & KERANJANG -->
+        <div class="catalog-toolbar">
+          <div class="currency-group">
+            <label for="currency-select">💱 Mata Uang:</label>
+            <select id="currency-select">
+              <option value="IDR">IDR (Rupiah - Indonesia)</option>
+              <option value="USD">USD ($ - Export)</option>
+              <option value="AED">AED (Emirates Dirham)</option>
+              <option value="EUR">EUR (€ - Euro)</option>
+            </select>
+          </div>
+
+          <button id="open-cart-btn" class="cart-trigger">
+            <svg class="icon-cart-header" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            <span>Keranjang (<strong id="cart-count">0</strong>)</span>
+          </button>
+        </div>
+
+        <!-- PRODUCT GRID -->
+        <div class="product-grid">
+          {productGroups.map((group) => (
+            <div class="product-card" id={`card-${group.id}`}>
+              
+              <!-- 1. GAMBAR PRODUK DI ATAS -->
+              <div class="product-image-wrapper">
+                <span class="badge-grade">{group.grade}</span>
+                <div class="product-icon-display">{group.imageIcon}</div>
+              </div>
+              
+              <div class="product-content">
+                <div class="spec-tag">{group.spec}</div>
+                
+                <!-- 2. NAMA PRODUK -->
+                <h3 class="product-title">{group.name}</h3>
+
+                <!-- 3. PILIHAN KEMASAN KOTAK-KOTAK KECIL -->
+                <div class="size-selection-area">
+                  <span class="size-label">Kemasan:</span>
+                  <div class="size-pills">
+                    {group.variants.map((v, idx) => (
+                      <button 
+                        class={`size-pill ${idx === 0 ? 'active' : ''}`} 
+                        data-group-id={group.id} 
+                        data-index={idx}
+                      >
+                        {v.size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <!-- 4. HARGA (KIRI) SEJAJAR DENGAN ICON KERANJANG (POJOK KANAN) -->
+                <div class="price-cart-footer">
+                  <div class="price-box">
+                    <span class="price-subtext">Harga:</span>
+                    <div class="price-value" id={`price-${group.id}`}>
+                      Rp {group.variants[0].priceIDR.toLocaleString('id-ID')}
+                    </div>
+                  </div>
+
+                  <button 
+                    class="btn-add-cart-icon" 
+                    data-group-id={group.id} 
+                    title="Tambah ke Keranjang"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SIDEBAR KERANJANG (TAMPILAN DI-REDESIGN AGAR SUPER RAPI) -->
+    <div id="cart-sidebar" class="cart-sidebar">
+      <div class="cart-header">
+        <div class="cart-header-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <h3>Keranjang Belanja</h3>
+        </div>
+        <button id="close-cart-btn" class="close-btn">&times;</button>
+      </div>
+
+      <div id="cart-items" class="cart-body">
+        <p class="empty-cart-text">Keranjang masih kosong.</p>
+      </div>
+
+      <div class="cart-footer">
+        <div class="cart-summary-row">
+          <span class="summary-label">Total Pembayaran</span>
+          <span id="cart-total-price" class="summary-amount">Rp 0</span>
+        </div>
+        <button id="pay-button" class="checkout-btn">
+          Bayar Langsung Sekarang
+        </button>
+      </div>
+    </div>
+    <div id="cart-overlay" class="cart-overlay"></div>
+  </main>
+</Layout>
+
+<script>
+  import { productGroups } from '../data/products';
+
+  let cart = [];
+  let currentCurrency = 'IDR';
+  let selectedVariantsState = {};
+
+  productGroups.forEach(g => {
+    selectedVariantsState[g.id] = 0;
+  });
+
+  function formatPrice(val, curr) {
+    if (curr === 'IDR') return `Rp ${val.toLocaleString('id-ID')}`;
+    if (curr === 'USD') return `$ ${val.toFixed(2)}`;
+    if (curr === 'AED') return `${val.toFixed(2)} AED`;
+    if (curr === 'EUR') return `€ ${val.toFixed(2)}`;
+    return `${val}`;
+  }
+
+  function getVariantPrice(variant, curr) {
+    if (curr === 'USD') return variant.priceUSD;
+    if (curr === 'AED') return variant.priceAED;
+    if (curr === 'EUR') return variant.priceEUR;
+    return variant.priceIDR;
+  }
+
+  function updateCardPriceUI(groupId) {
+    const group = productGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    const variantIndex = selectedVariantsState[groupId];
+    const selectedVariant = group.variants[variantIndex];
+    const priceDisplayEl = document.getElementById(`price-${groupId}`);
+
+    if (priceDisplayEl) {
+      const priceVal = getVariantPrice(selectedVariant, currentCurrency);
+      priceDisplayEl.innerText = formatPrice(priceVal, currentCurrency);
+    }
+  }
+
+  // EVENT PILL KEMASAN
+  document.querySelectorAll('.size-pill').forEach(pill => {
+    pill.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const groupId = target.dataset.groupId;
+      const index = parseInt(target.dataset.index || '0', 10);
+
+      const parentCard = target.closest('.product-card');
+      parentCard?.querySelectorAll('.size-pill').forEach(btn => btn.classList.remove('active'));
+
+      target.classList.add('active');
+      selectedVariantsState[groupId] = index;
+      updateCardPriceUI(groupId);
+    });
+  });
+
+  // EVENT SWITCH CURRENCY
+  document.getElementById('currency-select')?.addEventListener('change', (e) => {
+    currentCurrency = (e.target as HTMLSelectElement).value;
+    productGroups.forEach(g => updateCardPriceUI(g.id));
+    updateCartUI();
+  });
+
+  // EVENT TAMBAH KE KERANJANG
+  document.querySelectorAll('.btn-add-cart-icon').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLElement;
+      const groupId = target.dataset.groupId;
+      const group = productGroups.find(g => g.id === groupId);
+      if (!group) return;
+
+      const variantIndex = selectedVariantsState[groupId];
+      const variant = group.variants[variantIndex];
+      const cartItemId = `${group.id}-${variant.size.replace(/\s+/g, '').toLowerCase()}`;
+
+      const existingIndex = cart.findIndex(item => item.cartItemId === cartItemId);
+      if (existingIndex > -1) {
+        cart[existingIndex].qty += 1;
+      } else {
+        cart.push({
+          cartItemId,
+          name: group.name,
+          spec: group.spec,
+          size: variant.size,
+          prices: {
+            IDR: variant.priceIDR,
+            USD: variant.priceUSD,
+            AED: variant.priceAED,
+            EUR: variant.priceEUR
+          },
+          qty: 1
+        });
+      }
+
+      updateCartUI();
+      openCart();
+    });
+  });
+
+  // SIDEBAR DRAWER LOGIC
+  const cartSidebar = document.getElementById('cart-sidebar');
+  const cartOverlay = document.getElementById('cart-overlay');
+
+  function openCart() {
+    cartSidebar?.classList.add('open');
+    cartOverlay?.classList.add('open');
+  }
+
+  function closeCart() {
+    cartSidebar?.classList.remove('open');
+    cartOverlay?.classList.remove('open');
+  }
+
+  document.getElementById('open-cart-btn')?.addEventListener('click', openCart);
+  document.getElementById('close-cart-btn')?.addEventListener('click', closeCart);
+  cartOverlay?.addEventListener('click', closeCart);
+
+  // RENDER ISI KERANJANG RAPI
+  function updateCartUI() {
+    const cartCountEl = document.getElementById('cart-count');
+    const cartItemsEl = document.getElementById('cart-items');
+    const cartTotalPriceEl = document.getElementById('cart-total-price');
+
+    const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    if (cartCountEl) cartCountEl.innerText = totalQty.toString();
+
+    if (cart.length === 0) {
+      if (cartItemsEl) {
+        cartItemsEl.innerHTML = `
+          <div class="empty-cart-state">
+            <span class="empty-icon">🛒</span>
+            <p>Keranjang Anda masih kosong</p>
+          </div>
+        `;
+      }
+      if (cartTotalPriceEl) cartTotalPriceEl.innerText = formatPrice(0, currentCurrency);
+      return;
+    }
+
+    let itemsHTML = '';
+    let grandTotal = 0;
+
+    cart.forEach((item, index) => {
+      const price = item.prices[currentCurrency];
+      const itemSubtotal = price * item.qty;
+      grandTotal += itemSubtotal;
+
+      itemsHTML += `
+        <div class="cart-item-row">
+          <div class="cart-item-main">
+            <div class="cart-item-head">
+              <h4 class="cart-item-title">${item.name}</h4>
+              <button class="cart-item-remove" onclick="removeCartItem(${index})" title="Hapus">&times;</button>
+            </div>
+            
+            <div class="cart-item-details">
+              <span class="item-badge-spec">${item.spec}</span>
+              <span class="item-badge-size">Kemasan: ${item.size}</span>
+            </div>
+
+            <div class="cart-item-bottom">
+              <div class="qty-stepper">
+                <button class="stepper-btn" onclick="changeQty(${index}, -1)">-</button>
+                <span class="stepper-val">${item.qty}</span>
+                <button class="stepper-btn" onclick="changeQty(${index}, 1)">+</button>
+              </div>
+
+              <div class="cart-item-price-group">
+                <span class="unit-price">${formatPrice(price, currentCurrency)}/pcs</span>
+                <span class="subtotal-price">${formatPrice(itemSubtotal, currentCurrency)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    if (cartItemsEl) cartItemsEl.innerHTML = itemsHTML;
+    if (cartTotalPriceEl) cartTotalPriceEl.innerText = formatPrice(grandTotal, currentCurrency);
+  }
+
+  window.changeQty = (index, delta) => {
+    cart[index].qty += delta;
+    if (cart[index].qty <= 0) cart.splice(index, 1);
+    updateCartUI();
+  };
+
+  window.removeCartItem = (index) => {
+    cart.splice(index, 1);
+    updateCartUI();
+  };
+
+  // CHECKOUT PAYMENT LOGIC
+  const payButton = document.getElementById('pay-button');
+  payButton?.addEventListener('click', async () => {
+    if (cart.length === 0) {
+      alert('Keranjang belanja Anda kosong!');
+      return;
+    }
+
+    const grandTotal = cart.reduce((sum, item) => sum + (item.prices[currentCurrency] * item.qty), 0);
+    
+    if (currentCurrency === 'IDR' && grandTotal < 10000) {
+      alert('Minimal transaksi pembayaran via Midtrans adalah Rp 10.000');
+      return;
+    }
+
+    const orderPayload = {
+      order_id: 'MAGNA-' + Date.now(),
+      gross_amount: Math.round(grandTotal),
+      items: cart.map(item => ({
+        id: item.cartItemId,
+        price: Math.round(item.prices[currentCurrency]),
+        quantity: item.qty,
+        name: `${item.name} (${item.size})`.substring(0, 50)
+      }))
+    };
+
+    payButton.innerText = 'Memproses Pembayaran...';
+    (payButton as HTMLButtonElement).disabled = true;
+
+    try {
+      const res = await fetch('/api/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+
+      const data = await res.json();
+
+      if (data.token) {
+        // @ts-ignore
+        window.snap.pay(data.token, {
+          onSuccess: function(result) {
+            alert("Pembayaran Berhasil!");
+            cart = [];
+            updateCartUI();
+            closeCart();
+          },
+          onPending: function(result) {
+            alert("Selesaikan pembayaran Anda di popup yang muncul.");
+          },
+          onError: function(result) {
+            alert("Gagal memproses pembayaran!");
+          },
+          onClose: function() {
+            alert('Anda menutup jendela pembayaran.');
+          }
+        });
+      } else {
+        alert('Gagal mendapatkan token transaksi. Cek konfigurasi MIDTRANS_SERVER_KEY Anda.');
+        console.error('API Response Error:', data);
+      }
+    } catch (err) {
+      console.error('Network/System Error:', err);
+      alert('Terjadi kesalahan koneksi ke server.');
+    } finally {
+      payButton.innerText = 'Bayar Langsung Sekarang';
+      (payButton as HTMLButtonElement).disabled = false;
+    }
+  });
+</script>
+
+<style>
+  :root {
+    --primary: #1b4332;
+    --primary-hover: #143225;
+    --accent-green: #2d6a4f;
+    --bg-page: #f8faf9;
+    --text-main: #111827;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+    --white: #ffffff;
+    --radius-card: 14px;
+  }
+
+  .container { max-width: 1140px; margin: 0 auto; padding: 0 1.25rem; }
+  .catalog-section { padding: 2.5rem 0 5rem; background: var(--bg-page); min-height: 85vh; }
+
+  /* TOOLBAR */
+  .catalog-toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--white); padding: 0.85rem 1.25rem;
+    border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+  }
+  .currency-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
+  .currency-group select { padding: 0.4rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-weight: 600; outline: none; }
+  
+  .cart-trigger {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--primary); color: var(--white); border: none;
+    padding: 0.6rem 1.1rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .cart-trigger:hover { background: var(--primary-hover); }
+
+  /* PRODUCT GRID */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.5rem; }
+
+  .product-card {
+    background: var(--white); border: 1px solid var(--border-color);
+    border-radius: var(--radius-card); overflow: hidden;
+    display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.04); }
+
+  /* GAMBAR PRODUK */
+  .product-image-wrapper {
+    height: 160px; background: #eaf4ee; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .product-icon-display { font-size: 3.5rem; line-height: 1; }
+  .badge-grade {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(27, 67, 50, 0.9); color: white;
+    font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .product-content { padding: 1.15rem; display: flex; flex-direction: column; flex-grow: 1; }
+  .spec-tag { font-size: 0.68rem; font-weight: 700; color: var(--accent-green); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 0.25rem; }
+
+  /* NAMA PRODUK */
+  .product-title { font-size: 0.98rem; font-weight: 700; color: var(--text-main); margin: 0 0 0.85rem; line-height: 1.35; min-height: 2.6rem; }
+
+  /* KOTAK-KOTAK KECIL PILIHAN KEMASAN */
+  .size-selection-area { margin-bottom: 1.15rem; }
+  .size-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.4rem; }
+  
+  .size-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .size-pill {
+    background: #f9fafb; border: 1px solid var(--border-color); color: var(--text-main);
+    padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: all 0.15s ease;
+  }
+  .size-pill:hover { border-color: var(--primary); color: var(--primary); }
+  .size-pill.active {
+    background: var(--primary); color: white; border-color: var(--primary);
+  }
+
+  /* HARGA & ICON KERANJANG POJOK BAWAH SEJAJAR */
+  .price-cart-footer {
+    margin-top: auto; padding-top: 0.85rem; border-top: 1px dashed var(--border-color);
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  
+  .price-subtext { font-size: 0.72rem; color: var(--text-muted); display: block; }
+  .price-value { font-size: 1.15rem; font-weight: 800; color: var(--primary); margin-top: 2px; }
+
+  .btn-add-cart-icon {
+    background: #f0fdf4; color: var(--primary); border: 1px solid #bbf7d0;
+    width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .btn-add-cart-icon:hover { background: var(--primary); color: white; border-color: var(--primary); }
+  .btn-add-cart-icon:active { transform: scale(0.92); }
+
+  /* ========================================= */
+  /* TAMPILAN DRAWER KERANJANG - CLEAN & MODERN */
+  /* ========================================= */
+  .cart-sidebar {
+    position: fixed; top: 0; right: -420px; width: 400px; height: 100vh;
+    background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.08); z-index: 1000;
+    display: flex; flex-direction: column; transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .cart-sidebar.open { right: 0; }
+  .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 999; display: none; }
+  .cart-overlay.open { display: block; }
+
+  .cart-header {
+    padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);
+    display: flex; justify-content: space-between; align-items: center; background: #fafafa;
+  }
+  .cart-header-title { display: flex; align-items: center; gap: 0.6rem; color: var(--primary); }
+  .cart-header-title h3 { font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-main); }
+  .close-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+
+  .cart-body { padding: 1.25rem; flex-grow: 1; overflow-y: auto; background: #fbfbfb; }
+
+  .empty-cart-state { text-align: center; padding: 4rem 1rem; color: var(--text-muted); }
+  .empty-cart-state .empty-icon { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+
+  /* ITEM KARTU KERANJANG */
+  .cart-item-row {
+    background: white; border: 1px solid var(--border-color); border-radius: 10px;
+    padding: 1rem; margin-bottom: 0.85rem; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .cart-item-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.4rem; }
+  .cart-item-title { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.3; }
+  .cart-item-remove { background: none; border: none; color: #ef4444; font-size: 1.2rem; cursor: pointer; padding: 0; line-height: 1; }
+
+  .cart-item-details { display: flex; gap: 0.4rem; margin-bottom: 0.85rem; }
+  .item-badge-spec, .item-badge-size {
+    font-size: 0.68rem; background: #f3f4f6; color: #4b5563; padding: 2px 7px; border-radius: 4px; font-weight: 600;
+  }
+
+  .cart-item-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 0.6rem; border-top: 1px dashed var(--border-color); }
+  
+  .qty-stepper { display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden; background: white; }
+  .stepper-btn { width: 28px; height: 26px; border: none; background: #f9fafb; font-weight: 700; cursor: pointer; color: var(--text-main); }
+  .stepper-btn:hover { background: #e5e7eb; }
+  .stepper-val { padding: 0 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+
+  .cart-item-price-group { text-align: right; }
+  .unit-price { display: block; font-size: 0.7rem; color: var(--text-muted); }
+  .subtotal-price { font-size: 0.95rem; font-weight: 800; color: var(--primary); }
+
+  /* FOOTER KERANJANG */
+  .cart-footer { padding: 1.25rem 1.5rem; border-top: 1px solid var(--border-color); background: white; }
+  .cart-summary-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; }
+  .summary-label { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); }
+  .summary-amount { font-size: 1.25rem; font-weight: 800; color: var(--primary); }
+
+  .checkout-btn {
+    width: 100%; background: var(--primary); color: white; border: none; padding: 0.9rem;
+    font-size: 0.95rem; font-weight: 700; border-radius: 10px; cursor: pointer; transition: background 0.2s ease;
+    box-shadow: 0 4px 12px rgba(27, 67, 50, 0.2);
+  }
+  .checkout-btn:hover { background: var(--primary-hover); }
+
+  @media (max-width: 480px) {
+    .cart-sidebar { width: 100%; right: -100%; }
+  }
+</style>
