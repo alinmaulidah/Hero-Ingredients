@@ -19,14 +19,14 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 
     <!-- PROFIL PERUSAHAAN -->
     <section class="company-overview section-padding">
-      <div class="container grid-2">
+      <div class="container grid-2 align-center">
         <div class="overview-text">
           <h2>Siapa Kami</h2>
           <p>
             <strong>Natural Ingredients</strong> adalah perusahaan terdepan dalam industri rantai pasok dan pengolahan bahan baku alam terpadu. Kami berfokus pada transformasi hasil alam berkualitas tinggi menjadi produk olahan siap pakai untuk industri makanan, minuman, farmasi, kosmetik, dan herbal.
           </p>
           <p>
-            Berbasis pada kekuatan sumber daya lokal, kami mengintegrasikan proses dari hulu (petani dan pemanenan) hingga hilir (ekstraksi dan pengolahan berstandar modern) untuk memastikan efisiensi, keamanan, serta mutu yang konsisten.
+            Berbasis pada kekuatan sumber daya lokal, kami mengintegrasikan proses dari hulu hingga hilir untuk memastikan efisiensi, keamanan, serta mutu yang konsisten.
           </p>
         </div>
         <div class="overview-stats">
@@ -36,7 +36,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
           </div>
           <div class="stat-card">
             <h3>50+</h3>
-            <p>Mitra Kelompok Tani Lokal</p>
+            <p>Mitra Kelompok Tani</p>
           </div>
           <div class="stat-card">
             <h3>5+</h3>
@@ -44,36 +44,65 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
           </div>
           <div class="stat-card">
             <h3>Global</h3>
-            <p>Jangkauan Pasar Ekspor & Lokal</p>
+            <p>Pasar Ekspor & Lokal</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISI & MISI -->
+    <section class="vision-mission-section section-padding bg-light">
+      <div class="container">
+        <div class="section-header">
+          <h2>Visi & Misi</h2>
+          <p>Arah dan komitmen utama kami dalam mengembangkan industri bahan baku alam.</p>
+        </div>
+
+        <div class="grid-2">
+          <div class="vm-card vision-card">
+            <span class="vm-label">Visi</span>
+            <h3>Menjadi Perusahaan Pengolahan Bahan Alam Terdepan</h3>
+            <p>
+              Menjadi perusahaan pengolahan bahan alam yang adaptif terhadap sumber daya lokal serta mampu merespons kebutuhan dan perkembangan pasar global secara berkelanjutan.
+            </p>
+          </div>
+
+          <div class="vm-card mission-card">
+            <span class="vm-label">Misi</span>
+            <ul class="mission-list">
+              <li>Menyediakan bahan alam berkualitas tinggi dengan standar pengolahan terbaik.</li>
+              <li>Mengembangkan jaringan rantai pasok lokal yang berkelanjutan dan berdampak positif.</li>
+              <li>Menghadirkan inovasi produk olahan bahan alam sesuai dengan tren pasar global.</li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
 
     <!-- PILAR UTAMA KAMI -->
-    <section class="pillars-section section-padding bg-light">
+    <section class="pillars-section section-padding">
       <div class="container">
         <div class="section-header">
           <h2>Pilar Utama Kami</h2>
-          <p>Komitmen kami dalam menjalankan bisnis yang berdampak dan berkelanjutan.</p>
+          <p>Prinsip operasional kami dalam menjalankan bisnis yang berdampak dan berkelanjutan.</p>
         </div>
 
         <div class="grid-3">
           <div class="pillar-card">
-            <div class="pillar-icon">🌱</div>
-            <h3>Keberlanjutan (Sustainability)</h3>
-            <p>Kami menerapkan praktik pemanenan yang etis dan ramah lingkungan untuk menjaga kelestarian ekosistem serta ketersediaan rantai pasok jangka panjang.</p>
+            <span class="pillar-num">01</span>
+            <h3>Keberlanjutan</h3>
+            <p>Menerapkan praktik pemanenan yang etis dan ramah lingkungan untuk menjaga kelestarian ekosistem serta ketersediaan rantai pasok jangka panjang.</p>
           </div>
 
           <div class="pillar-card">
-            <div class="pillar-icon">🤝</div>
+            <span class="pillar-num">02</span>
             <h3>Pemberdayaan Lokal</h3>
             <p>Bermitra secara adil dengan petani lokal untuk meningkatkan kesejahteraan komunitas agrikultur serta menjaga standar hasil panen.</p>
           </div>
 
           <div class="pillar-card">
-            <div class="pillar-icon">🔬</div>
-            <h3>Riset & Inovasi Modern</h3>
+            <span class="pillar-num">03</span>
+            <h3>Riset & Inovasi</h3>
             <p>Menggunakan teknologi pengolahan dan ekstraksi mutakhir guna memastikan kandungan aktif bahan alam tetap terjaga maksimal.</p>
           </div>
         </div>
@@ -81,36 +110,25 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     </section>
 
     <!-- STANDAR KUALITAS & JAMINAN -->
-    <section class="quality-section section-padding">
+    <section class="quality-section section-padding bg-light">
       <div class="container grid-2 align-center">
-        <div class="quality-image">
-          <div class="image-box">
-            <span>🛡️ Quality & Compliance</span>
-          </div>
-        </div>
         <div class="quality-text">
           <h2>Jaminan Kualitas & Standar Industri</h2>
           <p>
             Kami memahami pentingnya ketepatan spesifikasi bahan baku dalam skala produksi industri. Oleh karena itu, setiap lot produksi melewati tahapan Quality Control (QC) yang ketat di laboratorium pengujian internal maupun independen.
           </p>
           <ul class="check-list">
-            <li>✅ Pengujian parameter organoleptik, kadar air, dan kadar abu.</li>
-            <li>✅ Uji cemaran mikroba dan logam berat sesuai standar BPOM/Internasional.</li>
-            <li>✅ Traceability (keterlacakan) penuh dari lahan hingga ke tangan mitra.</li>
-            <li>✅ Dokumentasi lengkap: Technical Data Sheet (TDS) & Certificate of Analysis (COA).</li>
+            <li>Pengujian parameter organoleptik, kadar air, dan kadar abu.</li>
+            <li>Uji cemaran mikroba dan logam berat sesuai standar BPOM & Internasional.</li>
+            <li>Traceability (keterlacakan) penuh dari lahan hingga ke tangan mitra.</li>
+            <li>Dokumentasi lengkap: Technical Data Sheet (TDS) & Certificate of Analysis (COA).</li>
           </ul>
         </div>
-      </div>
-    </section>
-
-    <!-- CTA BANNER -->
-    <section class="cta-section">
-      <div class="container text-center">
-        <h2>Siap Menjadi Mitra Industri Anda</h2>
-        <p>Tertarik menggunakan bahan baku alam berkualitas kami atau ingin berdiskusi seputar formulasi khusus?</p>
-        <div class="cta-actions">
-          <a href="/contact" class="btn btn-primary">Hubungi Tim Sales</a>
-          <a href="/#certifications" class="btn btn-outline">Lihat Sertifikasi</a>
+        <div class="quality-box">
+          <div class="quality-card-content">
+            <h3>Pengawasan Mutu Ketat</h3>
+            <p>Setiap bahan baku diproses dengan standar keamanan pangan, higienitas, serta verifikasi pengujian berkala.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -124,23 +142,30 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     --primary: #2d6a4f;
     --primary-dark: #1b4332;
     --primary-light: #52b788;
-    --accent: #d8f3dc;
+    --text-dark: #111827;
+    --text-muted: #4b5563;
     --bg-light: #f8faf9;
-    --text-dark: #1f2937;
-    --text-muted: #6b7280;
     --border: #e5e7eb;
     --white: #ffffff;
-    --radius: 12px;
+    --radius: 8px;
   }
 
+  /* RESET & BASE */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
   .about-page {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-dark);
+    line-height: 1.6;
+    background-color: var(--white);
+    -webkit-font-smoothing: antialiased;
   }
 
   .container {
+    width: 100%;
     max-width: 1140px;
     margin: 0 auto;
-    padding: 0 1.5rem;
+    padding: 0 1.25rem;
   }
 
   .section-padding {
@@ -151,20 +176,17 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     background-color: var(--bg-light);
   }
 
-  .text-center {
-    text-align: center;
-  }
-
+  /* GRIDS */
   .grid-2 {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
   }
 
   .grid-3 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
+    gap: 1.75rem;
   }
 
   .align-center {
@@ -173,82 +195,81 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 
   /* HERO */
   .about-hero {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    background: var(--primary-dark);
     color: var(--white);
-    padding: 6rem 0 5rem 0;
+    padding: 7rem 0 5.5rem 0;
     text-align: center;
   }
 
   .badge {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: var(--accent);
-    padding: 0.4rem 1.2rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary-light);
+    font-size: 0.75rem;
     font-weight: 700;
     display: inline-block;
     margin-bottom: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
   }
 
   .about-hero h1 {
     font-size: 2.75rem;
-    font-weight: 800;
+    font-weight: 700;
     max-width: 800px;
-    margin: 0 auto 1rem auto;
-    line-height: 1.25;
+    margin: 0 auto 1.25rem auto;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
   .about-hero p {
-    font-size: 1.15rem;
-    max-width: 650px;
+    font-size: 1.1rem;
+    max-width: 620px;
     margin: 0 auto;
-    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 300;
   }
 
   /* OVERVIEW & STATS */
   .overview-text h2 {
     font-size: 2rem;
     color: var(--primary-dark);
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 700;
   }
 
   .overview-text p {
     color: var(--text-muted);
-    line-height: 1.7;
+    font-size: 0.975rem;
     margin-bottom: 1rem;
   }
 
   .overview-stats {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   .stat-card {
     background: var(--bg-light);
     border: 1px solid var(--border);
-    padding: 2rem 1.5rem;
+    padding: 1.75rem 1.25rem;
     border-radius: var(--radius);
     text-align: center;
   }
 
   .stat-card h3 {
-    font-size: 2.25rem;
+    font-size: 2rem;
     color: var(--primary);
-    margin: 0 0 0.25rem 0;
-    font-weight: 800;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
   }
 
   .stat-card p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
-    margin: 0;
-    font-weight: 600;
+    font-weight: 500;
   }
 
-  /* PILARS */
+  /* SECTION HEADER */
   .section-header {
     text-align: center;
     margin-bottom: 3rem;
@@ -258,154 +279,174 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     font-size: 2rem;
     color: var(--primary-dark);
     margin-bottom: 0.5rem;
+    font-weight: 700;
   }
 
   .section-header p {
     color: var(--text-muted);
+    font-size: 1rem;
   }
 
-  .pillar-card {
+  /* VISI & MISI */
+  .vm-card {
     background: var(--white);
-    padding: 2.5rem 1.75rem;
+    padding: 2.25rem 2rem;
     border-radius: var(--radius);
     border: 1px solid var(--border);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s;
   }
 
-  .pillar-card:hover {
-    transform: translateY(-5px);
-  }
-
-  .pillar-icon {
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .pillar-card h3 {
-    font-size: 1.2rem;
-    color: var(--primary-dark);
+  .vm-label {
+    display: inline-block;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     margin-bottom: 0.75rem;
   }
 
-  .pillar-card p {
-    font-size: 0.925rem;
+  .vision-card h3 {
+    font-size: 1.25rem;
+    color: var(--primary-dark);
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+
+  .vision-card p {
     color: var(--text-muted);
-    line-height: 1.6;
-    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .mission-list {
+    list-style: none;
+  }
+
+  .mission-list li {
+    position: relative;
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+  }
+
+  .mission-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.6rem;
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary);
+    border-radius: 50%;
+  }
+
+  /* PILARS */
+  .pillar-card {
+    background: var(--white);
+    padding: 2rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+
+  .pillar-num {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .pillar-card h3 {
+    font-size: 1.15rem;
+    color: var(--primary-dark);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+  }
+
+  .pillar-card p {
+    font-size: 0.9rem;
+    color: var(--text-muted);
   }
 
   /* QUALITY */
-  .quality-image .image-box {
-    background: linear-gradient(135deg, var(--accent), #b7e4c7);
-    height: 320px;
-    border-radius: var(--radius);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--primary-dark);
-    border: 1px solid #b7e4c7;
-  }
-
   .quality-text h2 {
     font-size: 2rem;
     color: var(--primary-dark);
     margin-bottom: 1rem;
+    font-weight: 700;
   }
 
   .quality-text p {
     color: var(--text-muted);
-    line-height: 1.6;
+    font-size: 0.95rem;
     margin-bottom: 1.5rem;
   }
 
   .check-list {
     list-style: none;
-    padding: 0;
-    margin: 0;
   }
 
   .check-list li {
-    font-size: 0.95rem;
-    color: var(--text-dark);
+    position: relative;
+    padding-left: 1.5rem;
     margin-bottom: 0.75rem;
+    color: var(--text-dark);
+    font-size: 0.925rem;
     font-weight: 500;
   }
 
-  /* CTA BANNER */
-  .cta-section {
-    background-color: var(--primary-dark);
-    color: var(--white);
-    padding: 4.5rem 0;
+  .check-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid var(--primary);
+    border-bottom: 2px solid var(--primary);
+    transform: rotate(45deg);
   }
 
-  .cta-section h2 {
-    font-size: 2.25rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .cta-section p {
-    font-size: 1.1rem;
-    opacity: 0.9;
-    margin-bottom: 2rem;
-  }
-
-  .cta-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .btn {
-    display: inline-block;
-    padding: 0.85rem 1.75rem;
+  .quality-box {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    padding: 2.5rem 2rem;
     border-radius: var(--radius);
-    font-weight: 700;
-    text-decoration: none;
-    transition: all 0.2s;
   }
 
-  .btn-primary {
-    background-color: var(--primary-light);
+  .quality-card-content h3 {
+    font-size: 1.2rem;
     color: var(--primary-dark);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
   }
 
-  .btn-primary:hover {
-    background-color: var(--accent);
+  .quality-card-content p {
+    color: var(--text-muted);
+    font-size: 0.925rem;
+    margin: 0;
   }
 
-  .btn-outline {
-    border: 1px solid var(--white);
-    color: var(--white);
-  }
-
-  .btn-outline:hover {
-    background-color: var(--white);
-    color: var(--primary-dark);
-  }
-
-  /* RESPONSIVE */
+  /* RESPONSIVE STYLES */
   @media (max-width: 900px) {
+    .section-padding { padding: 3.5rem 0; }
+
     .grid-2, .grid-3, .overview-stats {
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 1.5rem;
     }
 
-    .about-hero h1 {
-      font-size: 2rem;
-    }
+    .about-hero { padding: 5rem 0 4rem 0; }
+    .about-hero h1 { font-size: 2rem; }
+    .about-hero p { font-size: 1rem; }
 
-    .cta-actions {
-      flex-direction: column;
-      align-items: center;
-    }
+    .section-header h2, 
+    .overview-text h2, 
+    .quality-text h2 { font-size: 1.65rem; }
 
-    .btn {
-      width: 100%;
-      max-width: 300px;
-      box-sizing: border-box;
+    .pillar-card {
+      border-left: 3px solid var(--primary-light);
     }
   }
 </style>

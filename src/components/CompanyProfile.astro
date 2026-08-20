@@ -15,28 +15,64 @@ import WhatsAppButton from './WhatsAppButton.astro';
         Memproses bahan rantai pasok alam terpadu untuk menjadi produk olahan yang berkualitas, aman, dan bernilai tinggi.
       </p>
       <div class="hero-actions">
-        <a href="#contact" class="btn btn-primary" data-lang-id="Mulai Konsultasi" data-lang-en="Start Consultation">Mulai Konsultasi</a>
-        <a href="#vision" class="btn btn-outline-light" data-lang-id="Pelajari Lebih Lanjut" data-lang-en="Learn More">Pelajari Lebih Lanjut</a>
+        <a href="#ingredients" class="btn btn-primary" data-lang-id="Lihat Produk" data-lang-en="View Products">Lihat Produk</a>
+        <a href="#contact" class="btn btn-outline-light" data-lang-id="Mulai Konsultasi" data-lang-en="Start Consultation">Mulai Konsultasi</a>
       </div>
     </div>
   </section>
 
-  <!-- VISION & MISSION -->
-  <section id="vision" class="vision-mission section-padding">
-    <div class="container grid-2">
-      <div class="card vision-card">
-        <h2>Vision</h2>
-        <p class="highlight-text" data-lang-id="Menjadi perusahaan pengolahan bahan alam yang beradaptasi dengan sumber daya lokal sesuai dengan kebutuhan dan perkembangan market." data-lang-en="To become a natural ingredient processing company adapting to local resources in line with market needs and developments.">
-          Menjadi perusahaan pengolahan bahan alam yang beradaptasi dengan sumber daya lokal sesuai dengan kebutuhan dan perkembangan market.
+  <!-- INGREDIENTS SECTION (Replacing Vision & Mission) -->
+  <section id="ingredients" class="ingredients section-padding">
+    <div class="container">
+      <div class="section-header">
+        <h2 data-lang-id="Produk Bahan Baku" data-lang-en="Our Ingredients">Produk Bahan Baku</h2>
+        <p data-lang-id="Rangkaian ekstrak dan olahan bahan alam pilihan berstandar mutu tinggi." data-lang-en="Selected natural extracts and processed ingredients with high quality standards.">
+          Rangkaian ekstrak dan olahan bahan alam pilihan berstandar mutu tinggi.
         </p>
       </div>
-      <div class="card mission-card">
-        <h2>Mission</h2>
-        <ul>
-          <li data-lang-id="Menyediakan bahan alam berkualitas tinggi dengan standar pengolahan terbaik." data-lang-en="Providing high quality natural ingredients with the best processing standards.">Menyediakan bahan alam berkualitas tinggi dengan standar pengolahan terbaik.</li>
-          <li data-lang-id="Mengembangkan jaringan rantai pasok lokal yang berkelanjutan dan berdampak positif." data-lang-en="Developing a sustainable and high-impact local supply chain network.">Mengembangkan jaringan rantai pasok lokal yang berkelanjutan dan berdampak positif.</li>
-          <li data-lang-id="Menghadirkan inovasi produk olahan bahan alam sesuai dengan tren pasar global." data-lang-en="Delivering innovative natural ingredient products in line with global market trends.">Menghadirkan inovasi produk olahan bahan alam sesuai dengan tren pasar global.</li>
-        </ul>
+
+      <div class="grid-3">
+        <!-- Ingredient Item 1 -->
+        <div class="ingredient-card">
+          <div class="ingredient-img-wrapper">
+            <img src="https://images.unsplash.com/photo-1615485290382-441e4d049cb5?auto=format&fit=crop&q=80&w=800" alt="Plant Extracts" loading="lazy" />
+          </div>
+          <div class="ingredient-info">
+            <h3>Ekstrak Herbal & Tanaman</h3>
+            <p data-lang-id="Ekstrak aktif konsentrat tinggi untuk kebutuhan nutraseutikal dan farmasi." data-lang-en="High-concentration active extracts for nutraceutical and pharmaceutical needs.">
+              Ekstrak aktif konsentrat tinggi untuk kebutuhan nutraseutikal dan farmasi.
+            </p>
+            <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Ingredient Item 2 -->
+        <div class="ingredient-card">
+          <div class="ingredient-img-wrapper">
+            <img src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&q=80&w=800" alt="Essential Oils" loading="lazy" />
+          </div>
+          <div class="ingredient-info">
+            <h3>Minyak Atsiri (Essential Oils)</h3>
+            <p data-lang-id="Minyak murni dari hasil penyulingan bahan alam lokal berkualitas." data-lang-en="Pure oils distilled from high-quality local natural resources.">
+              Minyak murni dari hasil penyulingan bahan alam lokal berkualitas.
+            </p>
+            <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+          </div>
+        </div>
+
+        <!-- Ingredient Item 3 -->
+        <div class="ingredient-card">
+          <div class="ingredient-img-wrapper">
+            <img src="https://images.unsplash.com/photo-1546554137-f86b9593a222?auto=format&fit=crop&q=80&w=800" alt="Natural Powders" loading="lazy" />
+          </div>
+          <div class="ingredient-info">
+            <h3>Bubuk Alam & Rempah</h3>
+            <p data-lang-id="Olahan bubuk halus bahan alam untuk aplikasi makanan, minuman, dan kosmetik." data-lang-en="Fine processed natural powders for food, beverage, and cosmetic applications.">
+              Olahan bubuk halus bahan alam untuk aplikasi makanan, minuman, dan kosmetik.
+            </p>
+            <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -46,7 +82,9 @@ import WhatsAppButton from './WhatsAppButton.astro';
     <div class="container">
       <div class="section-header">
         <h2 data-lang-id="Core Values" data-lang-en="Core Values">Core Values</h2>
-        <p data-lang-id="Prinsip utama kami dalam menghadirkan produk olahan bahan alam terbaik." data-lang-en="Our core principles in delivering the best processed natural ingredients.">Prinsip utama kami dalam menghadirkan produk olahan bahan alam terbaik.</p>
+        <p data-lang-id="Prinsip utama kami dalam menghadirkan produk olahan bahan alam terbaik." data-lang-en="Our core principles in delivering the best processed natural ingredients.">
+          Prinsip utama kami dalam menghadirkan produk olahan bahan alam terbaik.
+        </p>
       </div>
       <div class="grid-4">
         <div class="value-card">
@@ -78,11 +116,11 @@ import WhatsAppButton from './WhatsAppButton.astro';
       </div>
       <div class="grid-3">
         <div class="journey-card">
-          <span class="journey-tag">How it Start</span>
+          <span class="journey-tag">How it Started</span>
           <p data-lang-id="Berawal dari potensi kekayaan sumber daya alam lokal yang melimpah namun memerlukan standar pengolahan modern." data-lang-en="Starting from abundant local natural resource potential that required modern processing standards.">Berawal dari potensi kekayaan sumber daya alam lokal yang melimpah namun memerlukan standar pengolahan modern.</p>
         </div>
         <div class="journey-card">
-          <span class="journey-tag">How it Build</span>
+          <span class="journey-tag">How it Built</span>
           <p data-lang-id="Membangun fasilitas produksi berstandar serta menjalin kemitraan erat dengan para petani lokal." data-lang-en="Building standardized production facilities and establishing close partnerships with local farmers.">Membangun fasilitas produksi berstandar serta menjalin kemitraan erat dengan para petani lokal.</p>
         </div>
         <div class="journey-card">
@@ -93,7 +131,7 @@ import WhatsAppButton from './WhatsAppButton.astro';
     </div>
   </section>
 
-  <!-- PROCESS & IMPACT SECTION -->
+  <!-- PROCESS SECTION -->
   <section id="process" class="process section-padding bg-light">
     <div class="container">
       <div class="section-header">
@@ -102,26 +140,22 @@ import WhatsAppButton from './WhatsAppButton.astro';
       </div>
       <div class="grid-4">
         <div class="process-card">
-          <div class="step-num">1</div>
-          <div class="process-icon">🌱</div>
+          <span class="step-num">01</span>
           <h3>Seeding</h3>
           <p data-lang-id="Pemilihan benih dan bahan baku terbaik langsung dari sumbernya." data-lang-en="Selecting the best seeds and raw materials directly from the source.">Pemilihan benih dan bahan baku terbaik langsung dari sumbernya.</p>
         </div>
         <div class="process-card">
-          <div class="step-num">2</div>
-          <div class="process-icon">🌾</div>
+          <span class="step-num">02</span>
           <h3>Harvesting</h3>
           <p data-lang-id="Panen dilakukan pada masa optimal untuk menjaga mutu nutrisi/kandungan." data-lang-en="Harvesting at optimal timing to preserve active compound and nutrient quality.">Panen dilakukan pada masa optimal untuk menjaga mutu nutrisi/kandungan.</p>
         </div>
         <div class="process-card">
-          <div class="step-num">3</div>
-          <div class="process-icon">⚙️</div>
+          <span class="step-num">03</span>
           <h3>Processing</h3>
           <p data-lang-id="Pengolahan awal higienis dengan kontrol standar keamanan pangan." data-lang-en="Hygienic initial processing under food safety standards control.">Pengolahan awal higienis dengan kontrol standar keamanan pangan.</p>
         </div>
         <div class="process-card">
-          <div class="step-num">4</div>
-          <div class="process-icon">🏭</div>
+          <span class="step-num">04</span>
           <h3>Manufacturing</h3>
           <p data-lang-id="Proses ekstraksi & manufaktur modern siap pakai untuk industri." data-lang-en="Modern extraction & manufacturing process ready for industrial use.">Proses ekstraksi & manufaktur modern siap pakai untuk industri.</p>
         </div>
@@ -129,31 +163,23 @@ import WhatsAppButton from './WhatsAppButton.astro';
     </div>
   </section>
 
-  <!-- CERTIFICATIONS & PRICE LIST -->
+  <!-- CERTIFICATIONS SECTION (Image Gallery Only) -->
   <section id="certifications" class="certifications section-padding">
     <div class="container text-center">
-      <h2 data-lang-id="Sertifikasi & Mutu Terjamin" data-lang-en="Certifications & Guaranteed Quality">Sertifikasi & Mutu Terjamin</h2>
-      <p class="mb-4" data-lang-id="Memenuhi standar kualitas industri nasional dan internasional." data-lang-en="Meeting national and international industry quality standards.">Memenuhi standar kualitas industri nasional dan internasional.</p>
-      
-      <div class="cert-badges">
-        <span class="cert-badge">ISO</span>
-        <span class="cert-badge">HACCP</span>
-        <span class="cert-badge">GMP</span>
-        <span class="cert-badge">USDA Organic</span>
-        <span class="cert-badge">SNI</span>
+      <div class="section-header">
+        <h2 data-lang-id="Sertifikasi & Mutu Terjamin" data-lang-en="Certifications & Guaranteed Quality">Sertifikasi & Mutu Terjamin</h2>
+        <p data-lang-id="Memenuhi standar kualitas industri nasional dan internasional." data-lang-en="Meeting national and international industry quality standards.">Memenuhi standar kualitas industri nasional dan internasional.</p>
       </div>
-
-      <div class="download-box">
-        <h3 data-lang-id="Daftar Harga & Spesifikasi" data-lang-en="Price List & Specifications">Daftar Harga & Spesifikasi</h3>
-        <p data-lang-id="Unduh dokumen price list bahan baku alam kami:" data-lang-en="Download our natural ingredient price list document:">Unduh dokumen price list bahan baku alam kami:</p>
-        <a href="#" class="btn btn-download">
-          📄 Download Price List Natural Ingredient (.xlsx)
-        </a>
+      
+      <div class="cert-grid">
+        <div class="cert-item"><img src="https://placehold.co/180x80/f8faf9/1b4332?text=ISO+22000" alt="ISO 22000 Certification" /></div>
+        <div class="cert-item"><img src="https://placehold.co/180x80/f8faf9/1b4332?text=HACCP" alt="HACCP Certification" /></div>
+        <div class="cert-item"><img src="https://placehold.co/180x80/f8faf9/1b4332?text=GMP+Certified" alt="GMP Certification" /></div>
+        <div class="cert-item"><img src="https://placehold.co/180x80/f8faf9/1b4332?text=USDA+Organic" alt="USDA Organic Certification" /></div>
+        <div class="cert-item"><img src="https://placehold.co/180x80/f8faf9/1b4332?text=HALAL" alt="Halal Certification" /></div>
       </div>
     </div>
   </section>
-
-  
 
   <WhatsAppButton phoneNumber="6281230040921" />
 </div>
@@ -163,163 +189,183 @@ import WhatsAppButton from './WhatsAppButton.astro';
     --primary: #2d6a4f;
     --primary-dark: #1b4332;
     --primary-light: #52b788;
-    --accent: #d8f3dc;
-    --text-dark: #1f2937;
-    --text-muted: #6b7280;
-    --bg-light: #f8faf9;
+    --text-dark: #111827;
+    --text-muted: #4b5563;
+    --bg-light: #f9fafb;
     --white: #ffffff;
     --border: #e5e7eb;
-    --radius: 10px;
+    --radius: 6px;
   }
 
   html { scroll-behavior: smooth; }
 
   .company-profile {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-dark);
     line-height: 1.6;
+    background-color: #fff;
   }
 
   .container { max-width: 1140px; margin: 0 auto; padding: 0 1.5rem; }
-  .section-padding { padding: 5rem 0; }
+  .section-padding { padding: 6rem 0; }
   .bg-light { background-color: var(--bg-light); }
   .text-center { text-align: center; }
-  .text-max-width { max-width: 650px; margin: 0 auto; }
 
+  /* Grid Layouts */
   .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
-  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
 
+  /* Buttons */
   .btn {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
+    padding: 0.85rem 1.75rem;
     border-radius: var(--radius);
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.95rem;
     text-decoration: none;
     cursor: pointer;
-    border: none;
-    transition: all 0.2s;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
   }
   .btn-primary { background-color: var(--primary); color: var(--white); }
   .btn-primary:hover { background-color: var(--primary-dark); }
-  .btn-outline-light { border: 1px solid var(--white); color: var(--white); }
+  .btn-outline-light { border-color: rgba(255, 255, 255, 0.4); color: var(--white); }
   .btn-outline-light:hover { background-color: var(--white); color: var(--primary-dark); }
-  .btn-download { background-color: #15803d; color: var(--white); margin-top: 1rem; }
-  .btn-download:hover { background-color: #166534; }
-  .btn-full { width: 100%; text-align: center; font-size: 1rem; }
 
+  /* Minimal Badge */
   .badge {
-    background-color: var(--accent);
-    color: var(--primary-dark);
-    padding: 0.35rem 1rem;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary-light);
+    font-weight: 600;
+    font-size: 0.75rem;
     display: inline-block;
     margin-bottom: 1rem;
   }
 
-  .section-header { text-align: center; margin-bottom: 3rem; }
-  .section-header h2 { font-size: 2rem; color: var(--primary-dark); margin-bottom: 0.5rem; }
-  .section-header p { color: var(--text-muted); }
+  /* Section Header */
+  .section-header { text-align: center; margin-bottom: 3.5rem; }
+  .section-header h2 { font-size: 2.25rem; font-weight: 600; color: var(--primary-dark); margin-bottom: 0.75rem; letter-spacing: -0.02em; }
+  .section-header p { color: var(--text-muted); max-width: 600px; margin: 0 auto; font-size: 1.05rem; }
 
+  /* Hero */
   .hero {
     position: relative;
     background: url('https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&q=80&w=1600') center/cover no-repeat;
     color: var(--white);
-    padding: 8rem 0 6rem 0;
+    padding: 9rem 0 7rem 0;
   }
-  .hero-overlay { position: absolute; inset: 0; background: rgba(15, 35, 25, 0.75); }
-  .hero-content { position: relative; z-index: 1; max-width: 750px; }
-  .hero h1 { font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
-  .hero p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem; }
+  .hero-overlay { position: absolute; inset: 0; background: rgba(15, 30, 22, 0.82); }
+  .hero-content { position: relative; z-index: 1; max-width: 700px; }
+  .hero h1 { font-size: 3.25rem; font-weight: 700; line-height: 1.15; margin-bottom: 1.25rem; letter-spacing: -0.02em; }
+  .hero p { font-size: 1.15rem; color: rgba(255, 255, 255, 0.85); margin-bottom: 2.5rem; font-weight: 300; }
   .hero-actions { display: flex; gap: 1rem; }
 
-  .card {
+  /* Ingredients Gallery */
+  .ingredient-card {
     background: var(--white);
-    padding: 2.5rem;
-    border-radius: var(--radius);
     border: 1px solid var(--border);
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
   }
-  .vision-card h2, .mission-card h2 { color: var(--primary); margin-bottom: 1rem; }
-  .highlight-text { font-size: 1.15rem; font-weight: 500; color: var(--text-dark); }
-  .mission-card ul { padding-left: 1.2rem; }
-  .mission-card li { margin-bottom: 0.75rem; color: var(--text-muted); }
+  .ingredient-card:hover { border-color: var(--primary-light); }
+  .ingredient-img-wrapper { height: 220px; width: 100%; overflow: hidden; background: #eee; }
+  .ingredient-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+  .ingredient-info { padding: 1.75rem; }
+  .ingredient-info h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--primary-dark); }
+  .ingredient-info p { font-size: 0.925rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+  .link-detail {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .link-detail:hover { text-decoration: underline; }
 
+  /* Value Cards */
   .value-card {
     background: var(--white);
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
     border-radius: var(--radius);
-    border-top: 4px solid var(--primary);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
   }
-  .value-card h3 { color: var(--primary-dark); margin-bottom: 0.5rem; }
-  .value-card p { font-size: 0.925rem; color: var(--text-muted); }
+  .value-card h3 { color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 600; }
+  .value-card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
 
+  /* Journey Cards */
   .journey-card {
     background: var(--white);
-    padding: 2rem;
+    padding: 2.25rem 1.75rem;
     border-radius: var(--radius);
     border: 1px solid var(--border);
   }
   .journey-tag {
-    display: inline-block;
+    display: block;
     color: var(--primary);
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
   }
   .journey-card p { color: var(--text-muted); font-size: 0.95rem; }
 
+  /* Process Section */
   .process-card {
     background: var(--white);
-    padding: 1.75rem;
+    padding: 2rem 1.5rem;
     border-radius: var(--radius);
-    text-align: center;
-    position: relative;
     border: 1px solid var(--border);
   }
-  .step-num { position: absolute; top: 10px; right: 15px; font-size: 0.85rem; font-weight: 800; color: var(--primary-light); }
-  .process-icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
-  .process-card h3 { margin-bottom: 0.5rem; font-size: 1.15rem; }
+  .step-num { 
+    display: block; 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    color: var(--primary-light); 
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+  }
+  .process-card h3 { margin-bottom: 0.5rem; font-size: 1.1rem; font-weight: 600; }
   .process-card p { font-size: 0.875rem; color: var(--text-muted); }
 
-  .cert-badges { display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 3rem; }
-  .cert-badge {
-    background-color: var(--accent);
-    color: var(--primary-dark);
-    padding: 0.6rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 700;
-    font-size: 1rem;
-    border: 1px solid #b7e4c7;
+  /* Certifications Gallery */
+  .cert-grid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 2rem;
+    margin-top: 1rem;
   }
-  .download-box { background: #e8f5e9; padding: 2rem; border-radius: var(--radius); display: inline-block; }
-
-  .contact-form {
-    background: var(--white);
-    padding: 2.5rem;
+  .cert-item {
+    border: 1px solid var(--border);
     border-radius: var(--radius);
-    border: 1px solid var(--border);
+    padding: 1rem 1.5rem;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .form-group { margin-bottom: 1.25rem; text-align: left; }
-  .form-group label { display: block; margin-bottom: 0.4rem; font-weight: 600; font-size: 0.9rem; }
-  .form-group input, .form-group select, .form-group textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.95rem;
-    box-sizing: border-box;
+  .cert-item img {
+    max-height: 50px;
+    width: auto;
+    filter: grayscale(100%);
+    opacity: 0.75;
+    transition: all 0.2s ease;
   }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    outline: none;
-    border-color: var(--primary);
+  .cert-item:hover img {
+    filter: grayscale(0%);
+    opacity: 1;
   }
 
+  /* Responsive Adjustments */
   @media (max-width: 900px) {
     .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .hero { padding: 6rem 0 5rem 0; }
     .hero h1 { font-size: 2.25rem; }
+    .section-padding { padding: 4rem 0; }
   }
 </style>
