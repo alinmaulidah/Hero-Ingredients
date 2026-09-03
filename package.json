@@ -2,7 +2,7 @@
   "name": "company-profile",
   "version": "1.0.0",
   "private": true,
-  "description": "Website company profile Magna Ingredients - Astro frontend + Express backend",
+  "description": "Website company profile Hero Ingredients - Astro frontend + Express backend",
   "scripts": {
     "dev": "npm --prefix Frontend run dev",
     "dev:web": "npm --prefix Frontend run dev",

@@ -1,4 +1,4 @@
-# Company Profile — Magna Ingredients
+# Company Profile — Hero Ingredients
 
 Website company profile (Astro) + API (Express/MySQL).
 

@@ -14,13 +14,13 @@
 export const company = {
   /** Nama brand yang tampil di logo & halaman */
   brand: {
-    // verifikasi: sebelumnya "HERO INGREDIENTS" (Navbar) vs "Magna Ingredients" (Footer).
-    // Dipilih "Magna Ingredients" karena konsisten: DB magna_ingredients, order id "MAGNA-*",
+    // verifikasi: sebelumnya "HERO INGREDIENTS" (Navbar) vs "Hero Ingredients" (Footer).
+    // Dipilih "Hero Ingredients" karena konsisten: DB magna_ingredients, order id "MAGNA-*",
     // pesan API "MAGNA API", dan logo footer.
-    siteName: 'Magna Ingredients',
-    logoMain: 'Magna',
+    siteName: 'Hero Ingredients',
+    logoMain: 'Hero',
     logoSub: 'INGREDIENTS',
-    ariaLabel: 'Magna Ingredients',
+    ariaLabel: 'Hero Ingredients',
 
     /** Nama badan hukum */
     // verifikasi: dipakai di pesan default WhatsApp (WhatsAppButton) & konteks legal.
@@ -79,7 +79,7 @@ export const company = {
 
   /** Meta default (dipakai Layout bila halaman tidak mengirim title) */
   meta: {
-    defaultTitle: 'Magna Ingredients - Natural Raw Materials',
+    defaultTitle: 'Hero Ingredients - Natural Raw Materials',
   },
 };
 

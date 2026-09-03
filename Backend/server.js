@@ -20,7 +20,7 @@ app.use('/api/products', productRoutes);
 app.get('/api', (req, res) => {
   res.json({
     success: true,
-    message: 'MAGNA API is running'
+    message: 'Hero API is running'
   });
 });
 
