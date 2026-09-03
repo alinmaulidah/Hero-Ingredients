@@ -1,9 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import CompanyProfile from '../components/CompanyProfile.astro';
+import CompanyProfile from '../components/home/CompanyProfile.astro';
+import { company } from '../data/company';
 ---
 
-<Layout title="Hero Ingredients - High Quality Natural Raw Materials">
+<Layout title={`${company.brand.siteName} - High Quality Natural Raw Materials`}>
   <main>
     <!-- Profil Perusahaan / Beranda -->
     <CompanyProfile />

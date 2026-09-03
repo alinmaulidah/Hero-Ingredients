@@ -1,26 +1,28 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { company } from '../data/company';
+
+const { contact, address, hours, brand } = company;
 ---
 
-<Layout title="Hubungi Kami - Natural Ingredients">
+<Layout title={`Hubungi Kami - ${brand.siteName}`}>
   <main class="contact-page">
     <!-- HERO HEADER -->
     <section class="contact-hero">
       <div class="container">
-        <h1>Hubungi Kami</h1>
-        <p>Mari berdiskusi mengenai kebutuhan bahan baku alam, kerja sama pasokan, atau konsultasi produk untuk bisnis Anda.</p>
+        <h1 data-lang-id="Hubungi Kami" data-lang-en="Contact Us">Hubungi Kami</h1>
+        <p data-lang-id="Mari berdiskusi mengenai kebutuhan bahan baku alam, kerja sama pasokan, atau konsultasi produk untuk bisnis Anda." data-lang-en="Let's discuss your natural raw material needs, supply partnerships, or product consultation for your business.">Mari berdiskusi mengenai kebutuhan bahan baku alam, kerja sama pasokan, atau konsultasi produk untuk bisnis Anda.</p>
       </div>
     </section>
 
     <!-- MAIN CONTENT SECTION -->
     <section class="contact-section">
-      <div class="container grid-2">
-        
+      <div class="container contact-grid">
+
         <!-- INFORMASI PERUSAHAAN, JAM OPERASIONAL & MAP -->
         <div class="contact-info">
-          <h2>Informasi Perusahaan</h2>
-          <p class="company-desc">
+          <h2 data-lang-id="Informasi Perusahaan" data-lang-en="Company Information">Informasi Perusahaan</h2>
+          <p class="company-desc" data-lang-id="Kami siap membantu menyediakan rantai pasok bahan baku alam berkualitas tinggi dan sesuai standar industri Anda." data-lang-en="We are ready to help supply high-quality natural raw materials that meet your industry standards.">
             Kami siap membantu menyediakan rantai pasok bahan baku alam berkualitas tinggi dan sesuai standar industri Anda.
           </p>
 
@@ -31,9 +33,9 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
               </div>
               <div>
-                <span class="info-label">Alamat Kantor & Pabrik</span>
-                <p class="info-value"><strong>Aquila New Factory</strong></p>
-                <p class="info-value">Jalan Raya Indramayu, Kabupaten Indramayu, Jawa Barat, Indonesia</p>
+                <span class="info-label">{address.factory.label}</span>
+                <p class="info-value"><strong>{address.factory.name}</strong></p>
+                <p class="info-value">{address.factory.street}</p>
               </div>
             </div>
 
@@ -43,9 +45,9 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
               </div>
               <div>
-                <span class="info-label">Kontak Langsung</span>
-                <p class="info-value">Telepon / WA: +62 823 451 417</p>
-                <p class="info-value">Email: info@naturalingredients.co.id</p>
+                <span class="info-label" data-lang-id="Kontak Langsung" data-lang-en="Direct Contact">Kontak Langsung</span>
+                <p class="info-value">Telepon / WA: {contact.whatsappDisplay}</p>
+                <p class="info-value">Email: {contact.email}</p>
               </div>
             </div>
 
@@ -55,28 +57,32 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               </div>
               <div>
-                <span class="info-label">Jam Operasional</span>
-                <p class="info-value">Senin &ndash; Jumat: 08.00 &ndash; 17.00 WIB</p>
-                <p class="info-value">Sabtu: 08.00 &ndash; 12.00 WIB</p>
+                <span class="info-label" data-lang-id="Jam Operasional" data-lang-en="Business Hours">Jam Operasional</span>
+                {hours.map((h) => (
+                  <p class="info-value">{h.days}: {h.time}</p>
+                ))}
               </div>
             </div>
           </div>
 
           <!-- EMBED MAPS -->
           <div class="map-box">
-            <iframe 
-              src="https://maps.google.com/maps?q=Aquila+Indramayu&t=&z=15&ie=UTF8&iwloc=&output=embed" 
-              width="100%" 
-              height="200" 
-              style="border:0;" 
-              allowfullscreen="" 
-              loading="lazy" 
+            <iframe
+              src={`https://maps.google.com/maps?q=${encodeURIComponent(address.factory.mapsQuery)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+              width="100%"
+              height="200"
+              style="border:0;"
+              allowfullscreen=""
+              loading="lazy"
               referrerpolicy="no-referrer-when-downgrade">
             </iframe>
-            <a 
-              href="https://maps.google.com/maps?vet=10CAAQoqAOahcKEwig-eSMxZqWAxUAAAAAHQAAAAAQBg..i&sca_esv=8a52022686445ba0&pvq=Cg0vZy8xMWp5bDlkaDVrIgwKBmFxdWlsYRACGAM&lqi=ChBhcXVpbGEgaW5kcmFtYXl1SLH52KT2sICACFoYEAAYABgBIhBhcXVpbGEgaW5kcmFtYXl1kgESY29zbWV0aWNzX2luZHVzdHJ5&fvr=1&cs=0&um=1&ie=UTF-8&fb=1&gl=id&sa=X&ftid=0x2e6eb9930bbc50e3:0x80b295fb0705270b" 
-              target="_blank" 
-              class="map-btn">
+            <a
+              href={`https://maps.google.com/maps?q=${encodeURIComponent(address.factory.mapsQuery)}`}
+              target="_blank"
+              class="map-btn"
+              data-lang-id="Buka di Google Maps"
+              data-lang-en="Open in Google Maps"
+            >
               Buka di Google Maps &rarr;
             </a>
           </div>
@@ -84,73 +90,53 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 
         <!-- FORMULIR KONTAK -->
         <div class="contact-form-card">
-          <h2>Kirim Pesan</h2>
-          <p class="form-desc">Isi formulir di bawah ini dan tim kami akan merespons dalam 1x24 jam.</p>
+          <h2 data-lang-id="Kirim Pesan" data-lang-en="Send a Message">Kirim Pesan</h2>
+          <p class="form-desc" data-lang-id="Isi formulir di bawah ini dan tim kami akan merespons dalam 1x24 jam." data-lang-en="Fill out the form below and our team will respond within 24 hours.">Isi formulir di bawah ini dan tim kami akan merespons dalam 1x24 jam.</p>
 
           <form class="contact-form" onsubmit="event.preventDefault(); alert('Terima kasih! Pesan Anda telah terkirim.');">
             <div class="form-group">
-              <label for="nama">Nama Lengkap *</label>
-              <input type="text" id="nama" placeholder="Masukkan nama Anda" required />
+              <label for="nama" data-lang-id="Nama Lengkap" data-lang-en="Full Name">Nama Lengkap *</label>
+              <input type="text" id="nama" data-lang-id="Masukkan nama Anda" data-lang-en="Enter your name" placeholder="Masukkan nama Anda" required />
             </div>
 
             <div class="form-group">
-              <label for="email">Email Perusahaan / Pribadi *</label>
-              <input type="email" id="email" placeholder="contoh@perusahaan.com" required />
+              <label for="email" data-lang-id="Email Perusahaan / Pribadi" data-lang-en="Company / Personal Email">Email Perusahaan / Pribadi *</label>
+              <input type="email" id="email" data-lang-id="contoh@perusahaan.com" data-lang-en="name@company.com" placeholder="contoh@perusahaan.com" required />
             </div>
 
             <div class="form-group">
-              <label for="telepon">Nomor Telepon / WhatsApp *</label>
-              <input type="tel" id="telepon" placeholder="+62 812xxxxxxx" required />
+              <label for="telepon" data-lang-id="Nomor Telepon / WhatsApp" data-lang-en="Phone / WhatsApp Number">Nomor Telepon / WhatsApp *</label>
+              <input type="tel" id="telepon" data-lang-id="+62 812xxxxxxx" data-lang-en="+62 812xxxxxxx" placeholder="+62 812xxxxxxx" required />
             </div>
 
             <div class="form-group">
-              <label for="market">Kategori Pasar *</label>
+              <label for="market" data-lang-id="Kategori Pasar" data-lang-en="Market Category">Kategori Pasar *</label>
               <select id="market" required>
-                <option value="">-- Pilih Kategori Pasar --</option>
-                <option value="Lokal">Pasar Lokal (Indonesia)</option>
-                <option value="Export">Pasar Export (Mancanegara)</option>
+                <option value="" data-lang-id="-- Pilih Kategori Pasar --" data-lang-en="-- Select Market Category --">-- Pilih Kategori Pasar --</option>
+                <option value="Lokal" data-lang-id="Pasar Lokal (Indonesia)" data-lang-en="Local Market (Indonesia)">Pasar Lokal (Indonesia)</option>
+                <option value="Export" data-lang-id="Pasar Export (Mancanegara)" data-lang-en="Export Market (International)">Pasar Export (Mancanegara)</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="pesan">Pesan / Detail Kebutuhan Bahan Baku *</label>
-              <textarea id="pesan" rows="4" placeholder="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." required></textarea>
+              <label for="pesan" data-lang-id="Pesan / Detail Kebutuhan Bahan Baku" data-lang-en="Message / Raw Material Requirements Detail">Pesan / Detail Kebutuhan Bahan Baku *</label>
+              <textarea id="pesan" rows="4" data-lang-id="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." data-lang-en="Describe the type of raw material, estimated quantity, or specifications you need..." placeholder="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." required></textarea>
             </div>
 
-            <button type="submit" class="btn-submit">Kirim Pesan Sekarang</button>
+            <button type="submit" class="btn-submit" data-lang-id="Kirim Pesan Sekarang" data-lang-en="Send Message Now">Kirim Pesan Sekarang</button>
           </form>
         </div>
 
       </div>
     </section>
-
-    <!-- WHATSAPP FLOATING BUTTON -->
-    <WhatsAppButton phoneNumber="62823451417" />
   </main>
 </Layout>
 
 <style>
-  :root {
-    --primary: #2d6a4f;
-    --primary-dark: #1b4332;
-    --bg-light: #f8faf9;
-    --text-dark: #1f2937;
-    --text-muted: #6b7280;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --radius: 12px;
-  }
-
   .contact-page {
     background-color: var(--bg-light);
     min-height: 80vh;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
+    font-family: var(--font-sans);
   }
 
   /* HERO HEADER */
@@ -181,7 +167,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     padding: 4rem 0;
   }
 
-  .grid-2 {
+  .contact-grid {
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
     gap: 3rem;
@@ -331,6 +317,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     box-sizing: border-box;
     transition: all 0.2s;
     background-color: #fbfcfc;
+    font-family: var(--font-sans);
   }
 
   .form-group input:focus,
@@ -366,7 +353,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 
   /* RESPONSIVE */
   @media (max-width: 900px) {
-    .grid-2 {
+    .contact-grid {
       grid-template-columns: 1fr;
       gap: 2.5rem;
     }

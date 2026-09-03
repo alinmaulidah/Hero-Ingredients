@@ -1,15 +1,18 @@
-v---
+---
+import { company } from '../data/company';
+
 // Mendapatkan path halaman saat ini
 const currentPath = Astro.url.pathname;
+const { brand, nav } = company;
 ---
 
 <header class="navbar">
   <div class="container nav-container">
 
     <!-- LOGO -->
-    <a href="/" class="nav-logo" aria-label="Hero Ingredients">
-      <span class="logo-main">HERO</span>
-      <span class="logo-sub">INGREDIENTS</span>
+    <a href="/" class="nav-logo" aria-label={brand.ariaLabel}>
+      <span class="logo-main">{brand.logoMain}</span>
+      <span class="logo-sub">{brand.logoSub}</span>
     </a>
 
     <!-- AREA KANAN -->
@@ -18,9 +21,9 @@ const currentPath = Astro.url.pathname;
       <!-- LANGUAGE SWITCHER -->
       <div class="lang-switcher">
         <button
-          id="btn-id"
           class="lang-btn active"
           type="button"
+          data-lang="id"
           aria-label="Bahasa Indonesia"
         >
           <svg
@@ -44,9 +47,9 @@ const currentPath = Astro.url.pathname;
         </button>
 
         <button
-          id="btn-en"
           class="lang-btn"
           type="button"
+          data-lang="en"
           aria-label="English"
         >
           <svg
@@ -111,155 +114,30 @@ const currentPath = Astro.url.pathname;
     <!-- NAVIGATION -->
     <nav id="nav-menu" class="nav-menu">
 
-      <a
-        href="/"
-        class={`nav-link ${currentPath === '/' ? 'active' : ''}`}
-        data-lang-id="Beranda"
-        data-lang-en="Home"
-      >
-        Beranda
-      </a>
-
-      <a
-        href="/about"
-        class={`nav-link ${currentPath.startsWith('/about') ? 'active' : ''}`}
-        data-lang-id="Tentang Kami"
-        data-lang-en="About Us"
-      >
-        Tentang Kami
-      </a>
-
-      <a
-        href="/products"
-        class={`nav-link ${currentPath.startsWith('/products') ? 'active' : ''}`}
-        data-lang-id="Produk"
-        data-lang-en="Products"
-      >
-        Produk
-      </a>
-
-      <a
-        href="/contact"
-        class={`nav-link ${currentPath.startsWith('/contact') ? 'active' : ''}`}
-        data-lang-id="Kontak"
-        data-lang-en="Contact"
-      >
-        Kontak
-      </a>
+      {nav.map((item) => (
+        <a
+          href={item.href}
+          class={`nav-link ${
+            item.href === '/'
+              ? currentPath === '/' ? 'active' : ''
+              : currentPath.startsWith(item.href) ? 'active' : ''
+          }`}
+          data-lang-id={item.labelId}
+          data-lang-en={item.labelEn}
+        >
+          {item.labelId}
+        </a>
+      ))}
 
     </nav>
 
   </div>
 </header>
 
-
-<script>
-  const btnId = document.getElementById('btn-id');
-  const btnEn = document.getElementById('btn-en');
-  const hamburgerBtn = document.getElementById('hamburger-btn');
-  const navMenu = document.getElementById('nav-menu');
-
-  // ==============================
-  // LANGUAGE
-  // ==============================
-
-  function setLanguage(lang: 'id' | 'en') {
-    if (lang === 'id') {
-      btnId?.classList.add('active');
-      btnEn?.classList.remove('active');
-    } else {
-      btnEn?.classList.add('active');
-      btnId?.classList.remove('active');
-    }
-
-    document.querySelectorAll('[data-lang-id]').forEach((el) => {
-      const text = el.getAttribute(`data-lang-${lang}`);
-
-      if (text) {
-        if (
-          el.tagName === 'INPUT' ||
-          el.tagName === 'TEXTAREA'
-        ) {
-          (el as HTMLInputElement).placeholder = text;
-        } else {
-          el.textContent = text;
-        }
-      }
-    });
-
-    localStorage.setItem('preferred-lang', lang);
-  }
-
-  btnId?.addEventListener('click', () => {
-    setLanguage('id');
-  });
-
-  btnEn?.addEventListener('click', () => {
-    setLanguage('en');
-  });
-
-  const savedLang =
-    (localStorage.getItem('preferred-lang') as 'id' | 'en') || 'id';
-
-  setLanguage(savedLang);
-
-
-  // ==============================
-  // MOBILE MENU
-  // ==============================
-
-  hamburgerBtn?.addEventListener('click', () => {
-    const isOpen = hamburgerBtn.classList.toggle('open');
-
-    navMenu?.classList.toggle('active');
-
-    hamburgerBtn.setAttribute(
-      'aria-expanded',
-      String(isOpen)
-    );
-
-    document.body.classList.toggle(
-      'menu-open',
-      isOpen
-    );
-  });
-
-
-  // Tutup menu setelah link diklik
-  document.querySelectorAll('.nav-link').forEach((link) => {
-    link.addEventListener('click', () => {
-
-      hamburgerBtn?.classList.remove('open');
-
-      navMenu?.classList.remove('active');
-
-      hamburgerBtn?.setAttribute(
-        'aria-expanded',
-        'false'
-      );
-
-      document.body.classList.remove('menu-open');
-    });
-  });
-</script>
-
-
 <style>
   /* ========================================
-     VARIABLES
-  ======================================== */
-
-  :root {
-    --nav-primary: #2d6a4f;
-    --nav-dark: #1b4332;
-    --nav-text: #374151;
-    --nav-bg: rgba(255, 255, 255, 0.98);
-    --pill-bg: #e2e8f0;
-  }
-
-
-  /* ========================================
-     NAVBAR
+     NAVBAR — hanya gaya spesifik navbar
+     (token & .container global dari global.css)
   ======================================== */
 
   .navbar {
@@ -267,481 +145,290 @@ const currentPath = Astro.url.pathname;
     top: 0;
     left: 0;
     width: 100%;
-
     height: 68px;
-
     display: flex;
     align-items: center;
-
-    background: var(--nav-bg);
-
+    background: rgba(255, 255, 255, 0.98);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-
     z-index: 1000;
   }
 
-
-  /* ========================================
-     CONTAINER
-  ======================================== */
-
-  .container {
-    width: 100%;
-    max-width: 1200px;
-
-    margin: 0 auto;
-
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-
   .nav-container {
     min-height: 68px;
-
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     position: relative;
   }
 
-
-  /* ========================================
-     LOGO
-  ======================================== */
-
+  /* LOGO */
   .nav-logo {
     display: flex;
     align-items: center;
-
     gap: 6px;
-
     text-decoration: none;
-
     line-height: 1;
-
     white-space: nowrap;
-
     z-index: 1002;
   }
-
 
   .logo-main {
     font-size: 18px;
     font-weight: 800;
-
-    color: var(--nav-dark);
-
+    color: var(--primary-dark);
     letter-spacing: 1.4px;
   }
-
 
   .logo-sub {
     font-size: 18px;
     font-weight: 300;
-
-    color: var(--nav-primary);
-
+    color: var(--primary);
     letter-spacing: 1.4px;
   }
 
-
   .nav-logo:hover .logo-sub {
-    color: #52b788;
-
+    color: var(--primary-light);
     transition: color 0.25s ease;
   }
 
-
-  /* ========================================
-     DESKTOP NAVIGATION
-  ======================================== */
-
+  /* DESKTOP NAVIGATION */
   .nav-menu {
     display: flex;
     align-items: center;
-
     gap: 32px;
-
     margin-left: auto;
     margin-right: 24px;
   }
 
-
   .nav-link {
     position: relative;
-
     display: inline-flex;
     align-items: center;
-
     height: 68px;
-
     padding: 0;
-
     text-decoration: none;
-
-    color: var(--nav-text);
-
+    color: #374151;
     font-size: 15px;
     font-weight: 500;
-
-    transition:
-      color 0.2s ease,
-      font-weight 0.2s ease;
+    transition: color 0.2s ease, font-weight 0.2s ease;
   }
-
 
   .nav-link:hover,
   .nav-link.active {
-    color: var(--nav-primary);
+    color: var(--primary);
   }
-
 
   .nav-link.active {
     font-weight: 600;
   }
 
-
   .nav-link.active::after {
     content: '';
-
     position: absolute;
-
     left: 0;
     right: 0;
     bottom: 15px;
-
     height: 2px;
-
-    background: var(--nav-primary);
-
+    background: var(--primary);
     border-radius: 2px;
   }
 
-
-  /* ========================================
-     RIGHT ACTIONS
-  ======================================== */
-
+  /* RIGHT ACTIONS */
   .nav-actions {
     display: flex;
     align-items: center;
-
     gap: 10px;
-
     order: 3;
   }
 
-
-  /* ========================================
-     LANGUAGE SWITCHER
-  ======================================== */
-
+  /* LANGUAGE SWITCHER */
   .lang-switcher {
     display: inline-flex;
     align-items: center;
-
     gap: 2px;
-
     padding: 3px;
-
-    background: var(--pill-bg);
-
+    background: #e2e8f0;
     border-radius: 999px;
   }
-
 
   .lang-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-
     gap: 5px;
-
     border: none;
-
     background: transparent;
-
     padding: 5px 9px;
-
     border-radius: 999px;
-
     color: #64748b;
-
     font-size: 12px;
     font-weight: 600;
-
     cursor: pointer;
-
-    transition:
-      background 0.2s ease,
-      color 0.2s ease,
-      box-shadow 0.2s ease;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
   }
-
 
   .lang-btn.active {
     background: #ffffff;
-
     color: #334155;
-
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   }
-
 
   .flag-img {
     width: 18px;
     height: 18px;
-
     border-radius: 50%;
-
     object-fit: cover;
-
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   }
-
 
   .lang-code {
     letter-spacing: 0.2px;
   }
 
-
-  /* ========================================
-     HAMBURGER
-  ======================================== */
-
+  /* HAMBURGER */
   .hamburger {
     display: none;
-
     width: 28px;
     height: 22px;
-
     flex-direction: column;
     justify-content: space-between;
-
     padding: 0;
-
     border: none;
-
     background: transparent;
-
     cursor: pointer;
-
     z-index: 1002;
   }
-
 
   .hamburger .bar {
     width: 100%;
     height: 3px;
-
-    background: var(--nav-dark);
-
+    background: var(--primary-dark);
     border-radius: 3px;
-
-    transition:
-      transform 0.25s ease,
-      opacity 0.2s ease;
+    transition: transform 0.25s ease, opacity 0.2s ease;
   }
 
-
   /* Hamburger → X */
-
   .hamburger.open .bar:nth-child(1) {
     transform: translateY(9.5px) rotate(45deg);
   }
-
 
   .hamburger.open .bar:nth-child(2) {
     opacity: 0;
   }
 
-
   .hamburger.open .bar:nth-child(3) {
     transform: translateY(-9.5px) rotate(-45deg);
   }
 
-
-  /* ========================================
-     MOBILE
-  ======================================== */
-
+  /* MOBILE */
   @media (max-width: 768px) {
-
     .navbar {
       height: 62px;
     }
-
 
     .container {
       padding-left: 18px;
       padding-right: 18px;
     }
 
-
     .nav-container {
       min-height: 62px;
     }
 
-
     /* Logo lebih kecil */
-
     .logo-main,
     .logo-sub {
       font-size: 15px;
       letter-spacing: 1px;
     }
 
-
     .nav-logo {
       gap: 5px;
     }
-
-
-    /* Action */
 
     .nav-actions {
       gap: 8px;
     }
 
-
     .lang-switcher {
       padding: 2px;
     }
 
-
     .lang-btn {
       padding: 4px 7px;
-
       font-size: 11px;
     }
-
 
     .flag-img {
       width: 17px;
       height: 17px;
     }
 
-
     /* Hamburger tampil */
-
     .hamburger {
       display: flex;
     }
 
-
-    /* ====================================
-       MOBILE SIDE MENU
-    ==================================== */
-
+    /* MOBILE SIDE MENU */
     .nav-menu {
-
       position: fixed;
-
       top: 62px;
       right: -100%;
-
       width: 78%;
       max-width: 320px;
-
       height: calc(100vh - 62px);
-
       margin: 0;
-
       padding: 24px 22px;
-
       display: flex;
-
       flex-direction: column;
-
       align-items: stretch;
-
       justify-content: flex-start;
-
       gap: 0;
-
       background: #ffffff;
-
-      box-shadow:
-        -8px 0 25px rgba(0, 0, 0, 0.10);
-
+      box-shadow: -8px 0 25px rgba(0, 0, 0, 0.1);
       transition: right 0.28s ease;
-
       overflow-y: auto;
-
       z-index: 1001;
     }
-
 
     .nav-menu.active {
       right: 0;
     }
 
-
-    /* ====================================
-       MOBILE LINK
-    ==================================== */
-
     .nav-link {
-
       width: 100%;
-
       height: auto;
-
       min-height: 50px;
-
       display: flex;
-
       align-items: center;
-
       padding: 0;
-
       border-bottom: 1px solid #f1f5f9;
-
       font-size: 16px;
       font-weight: 500;
     }
-
 
     .nav-link:first-child {
       border-top: 1px solid #f1f5f9;
     }
 
-
-    .nav-link:hover,
-    .nav-link.active {
-      color: var(--nav-primary);
-    }
-
-
     .nav-link.active {
       font-weight: 700;
     }
 
-
     /* Hilangkan garis desktop */
-
     .nav-link.active::after {
       display: none;
     }
   }
 
-
-  /* ========================================
-     SMALL MOBILE
-  ======================================== */
-
+  /* SMALL MOBILE */
   @media (max-width: 420px) {
-
     .container {
       padding-left: 14px;
       padding-right: 14px;
     }
-
 
     .logo-main,
     .logo-sub {
@@ -749,33 +436,27 @@ const currentPath = Astro.url.pathname;
       letter-spacing: 0.8px;
     }
 
-
     .nav-actions {
       gap: 6px;
     }
-
 
     .lang-btn {
       padding: 4px 6px;
     }
 
-
     .lang-code {
       font-size: 10px;
     }
-
 
     .flag-img {
       width: 16px;
       height: 16px;
     }
 
-
     .hamburger {
       width: 25px;
       height: 20px;
     }
-
 
     .nav-menu {
       width: 82%;

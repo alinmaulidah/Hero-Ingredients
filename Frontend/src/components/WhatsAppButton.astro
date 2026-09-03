@@ -1,22 +1,25 @@
 ---
+import { company } from '../data/company';
+
 interface Props {
   phoneNumber?: string; // Format tanpa '+' atau '0' di awal, contoh: 62823451417
   message?: string;
 }
 
-const { 
-  phoneNumber = "62823451417", 
-  message = "Halo PT Panca Nature Internasional, saya ingin bertanya mengenai produk bahan alam." 
+const {
+  phoneNumber = company.contact.whatsappNumber,
+  message = `Halo ${company.brand.legalName}, saya ingin bertanya mengenai produk bahan alam.`,
 } = Astro.props;
 
 const encodedMessage = encodeURIComponent(message);
+const href = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 ---
 
 <!-- FLOATING WHATSAPP BUTTON (IKUT BERJALAN SAAT SCROLL) -->
-<a 
-  href={`https://wa.me/${phoneNumber}?text=${encodedMessage}`} 
-  class="wa-floating-btn" 
-  target="_blank" 
+<a
+  href={href}
+  class="wa-floating-btn"
+  target="_blank"
   rel="noopener noreferrer"
   aria-label="Chat WhatsApp"
 >
@@ -31,7 +34,7 @@ const encodedMessage = encodeURIComponent(message);
     position: fixed;
     bottom: 30px;
     right: 30px;
-    
+
     width: 60px;
     height: 60px;
     background-color: #25d366;

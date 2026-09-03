@@ -1,11 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { company } from '../data/company';
 ---
 
-<Layout title="Tentang Kami - Natural Ingredients">
+<Layout title={`Tentang Kami - ${company.brand.siteName}`}>
   <main class="about-page">
-    
+
     <!-- HERO SECTION -->
     <section class="about-hero">
       <div class="container">
@@ -25,7 +25,7 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
         <div class="overview-text">
           <h2 data-lang-id="Siapa Kami" data-lang-en="Who We Are">Siapa Kami</h2>
           <p>
-            <strong>Natural Ingredients</strong> <span data-lang-id="adalah perusahaan terdepan dalam industri rantai pasok dan pengolahan bahan baku alam terpadu. Kami berfokus pada transformasi hasil alam berkualitas tinggi menjadi produk olahan siap pakai untuk industri makanan, minuman, farmasi, kosmetik, dan herbal." data-lang-en="is a leading company in the integrated natural raw material supply chain and processing industry. We focus on transforming high-quality natural resources into ready-to-use processed products for the food, beverage, pharmaceutical, cosmetic, and herbal industries.">adalah perusahaan terdepan dalam industri rantai pasok dan pengolahan bahan baku alam terpadu. Kami berfokus pada transformasi hasil alam berkualitas tinggi menjadi produk olahan siap pakai untuk industri makanan, minuman, farmasi, kosmetik, dan herbal.</span>
+            <strong>{company.brand.siteName}</strong> <span data-lang-id="adalah perusahaan terdepan dalam industri rantai pasok dan pengolahan bahan baku alam terpadu. Kami berfokus pada transformasi hasil alam berkualitas tinggi menjadi produk olahan siap pakai untuk industri makanan, minuman, farmasi, kosmetik, dan herbal." data-lang-en="is a leading company in the integrated natural raw material supply chain and processing industry. We focus on transforming high-quality natural resources into ready-to-use processed products for the food, beverage, pharmaceutical, cosmetic, and herbal industries.">adalah perusahaan terdepan dalam industri rantai pasok dan pengolahan bahan baku alam terpadu. Kami berfokus pada transformasi hasil alam berkualitas tinggi menjadi produk olahan siap pakai untuk industri makanan, minuman, farmasi, kosmetik, dan herbal.</span>
           </p>
           <p data-lang-id="Berbasis pada kekuatan sumber daya lokal, kami mengintegrasikan proses dari hulu hingga hilir untuk memastikan efisiensi, keamanan, serta mutu yang konsisten." data-lang-en="Based on the strength of local resources, we integrate upstream to downstream processes to ensure efficiency, safety, and consistent quality.">
             Berbasis pada kekuatan sumber daya lokal, kami mengintegrasikan proses dari hulu hingga hilir untuk memastikan efisiensi, keamanan, serta mutu yang konsisten.
@@ -135,64 +135,15 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
       </div>
     </section>
 
-    <WhatsAppButton phoneNumber="62823451417" />
   </main>
 </Layout>
 
 <style>
-  :root {
-    --primary: #2d6a4f;
-    --primary-dark: #1b4332;
-    --primary-light: #52b788;
-    --text-dark: #111827;
-    --text-muted: #4b5563;
-    --bg-light: #f8faf9;
-    --border: #e5e7eb;
-    --white: #ffffff;
-    --radius: 8px;
-  }
-
-  /* RESET & BASE */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  
   .about-page {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     color: var(--text-dark);
     line-height: 1.6;
     background-color: var(--white);
     -webkit-font-smoothing: antialiased;
-  }
-
-  .container {
-    width: 100%;
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 0 1.25rem;
-  }
-
-  .section-padding {
-    padding: 5rem 0;
-  }
-
-  .bg-light {
-    background-color: var(--bg-light);
-  }
-
-  /* GRIDS */
-  .grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
-  }
-
-  .grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.75rem;
-  }
-
-  .align-center {
-    align-items: center;
   }
 
   /* HERO */
@@ -201,16 +152,6 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     color: var(--white);
     padding: 7rem 0 5.5rem 0;
     text-align: center;
-  }
-
-  .badge {
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--primary-light);
-    font-size: 0.75rem;
-    font-weight: 700;
-    display: inline-block;
-    margin-bottom: 1rem;
   }
 
   .about-hero h1 {
@@ -269,24 +210,6 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
     font-size: 0.85rem;
     color: var(--text-muted);
     font-weight: 500;
-  }
-
-  /* SECTION HEADER */
-  .section-header {
-    text-align: center;
-    margin-bottom: 3rem;
-  }
-
-  .section-header h2 {
-    font-size: 2rem;
-    color: var(--primary-dark);
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
-
-  .section-header p {
-    color: var(--text-muted);
-    font-size: 1rem;
   }
 
   /* VISI & MISI */
@@ -432,20 +355,25 @@ import WhatsAppButton from '../components/WhatsAppButton.astro';
 
   /* RESPONSIVE STYLES */
   @media (max-width: 900px) {
-    .section-padding { padding: 3.5rem 0; }
-
-    .grid-2, .grid-3, .overview-stats {
+    .overview-stats {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
 
-    .about-hero { padding: 5rem 0 4rem 0; }
-    .about-hero h1 { font-size: 2rem; }
-    .about-hero p { font-size: 1rem; }
+    .about-hero {
+      padding: 5rem 0 4rem 0;
+    }
+    .about-hero h1 {
+      font-size: 2rem;
+    }
+    .about-hero p {
+      font-size: 1rem;
+    }
 
-    .section-header h2, 
-    .overview-text h2, 
-    .quality-text h2 { font-size: 1.65rem; }
+    .overview-text h2,
+    .quality-text h2 {
+      font-size: 1.65rem;
+    }
 
     .pillar-card {
       border-left: 3px solid var(--primary-light);

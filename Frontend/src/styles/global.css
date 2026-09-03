@@ -1,1 +1,193 @@
-@import "tailwindcss";
+/* ============================================================
+   GLOBAL STYLES — Design tokens & utilitas bersama
+   ============================================================
+   Satu-satunya tempat deklarasi variabel warna/layout dan
+   kelas utilitas umum (.container, .section-padding, .grid-*,
+   tombol, badge, dll). Komponen/halaman hanya berisi CSS spesifik
+   miliknya sendiri dan memakai var(--...) dari sini.
+   ============================================================ */
+
+:root {
+  /* Palet brand */
+  --primary: #2d6a4f;
+  --primary-dark: #1b4332;
+  --primary-light: #52b788;
+  --primary-hover: #143225;
+  --accent-green: #2d6a4f;
+
+  /* Teks & latar */
+  --text-dark: #111827;
+  --text-muted: #4b5563;
+  --bg-light: #f8faf9;
+  --white: #ffffff;
+  --border: #e5e7eb;
+  --border-color: #e5e7eb;
+
+  /* Radius */
+  --radius: 8px;
+  --radius-card: 12px;
+
+  /* Layout */
+  --container-max: 1140px;
+  --container-pad: 1.25rem;
+
+  /* Tipografi */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  scroll-behavior: smooth;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* ============================================================
+   UTILITAS BERSAMA
+   ============================================================ */
+
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.section-padding {
+  padding: 5rem 0;
+}
+
+.bg-light {
+  background-color: var(--bg-light);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+/* Grid layouts */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2.5rem;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+/* ============================================================
+   TOMBOL
+   ============================================================ */
+
+.btn {
+  display: inline-block;
+  padding: 0.85rem 1.75rem;
+  border-radius: var(--radius);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: var(--white);
+}
+
+.btn-outline-light:hover {
+  background-color: var(--white);
+  color: var(--primary-dark);
+}
+
+/* ============================================================
+   BADGE & SECTION HEADER
+   ============================================================ */
+
+.badge {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary-light);
+  font-weight: 700;
+  font-size: 0.75rem;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.section-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-dark);
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.section-header p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   RESPONSIVE (utilitas grid & padding)
+   ============================================================ */
+
+@media (max-width: 900px) {
+  .section-padding {
+    padding: 3.5rem 0;
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}

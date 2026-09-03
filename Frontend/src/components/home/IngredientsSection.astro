@@ -1,0 +1,144 @@
+---
+
+---
+
+<!-- INGREDIENTS SECTION -->
+<section id="ingredients" class="ingredients section-padding">
+  <div class="container">
+    <div class="section-header">
+      <h2 data-lang-id="Produk Bahan Baku" data-lang-en="Our Ingredients">Produk Bahan Baku</h2>
+      <p data-lang-id="Rangkaian ekstrak dan olahan bahan alam pilihan berstandar mutu tinggi." data-lang-en="Selected natural extracts and processed ingredients with high quality standards.">
+        Rangkaian ekstrak dan olahan bahan alam pilihan berstandar mutu tinggi.
+      </p>
+    </div>
+
+    <div class="ingredients-grid">
+      <!-- Ingredient Item 1 -->
+      <div class="ingredient-card">
+        <div class="ingredient-img-wrapper">
+          <img src="https://images.unsplash.com/photo-1608571702600-5a5419d31475?auto=format&fit=crop&q=80&w=800" alt="Liquid Extracts" loading="lazy" />
+        </div>
+        <div class="ingredient-info">
+          <h3>Ekstrak Cair, Serbuk & Nanopartikel</h3>
+          <p data-lang-id="Beragam bentuk ekstrak bahan alam, dari cairan konsentrat, serbuk halus, hingga nanopartikel untuk aplikasi industri." data-lang-en="Various forms of natural extracts, from concentrated liquids, fine powders, to nanoparticles for industrial applications.">
+            Beragam bentuk ekstrak bahan alam, dari cairan konsentrat, serbuk halus, hingga nanopartikel untuk aplikasi industri.
+          </p>
+          <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Ingredient Item 2 -->
+      <div class="ingredient-card">
+        <div class="ingredient-img-wrapper">
+          <img src="https://images.unsplash.com/photo-1486548730767-5c679e8eda6b?auto=format&fit=crop&q=80&w=800" alt="Dried Spices and Powders" loading="lazy" />
+        </div>
+        <div class="ingredient-info">
+          <h3>Rempah Kering & Serbuk</h3>
+          <p data-lang-id="Rempah kering pilihan dan serbuk halus untuk kebutuhan industri pangan, minuman, dan kosmetik." data-lang-en="Selected dried spices and fine powders for food, beverage, and cosmetic industries.">
+            Rempah kering pilihan dan serbuk halus untuk kebutuhan industri pangan, minuman, dan kosmetik.
+          </p>
+          <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Ingredient Item 3 -->
+      <div class="ingredient-card">
+        <div class="ingredient-img-wrapper">
+          <img src="https://images.unsplash.com/photo-1621958180509-74e9a29b3758?auto=format&fit=crop&q=80&w=800" alt="Cold Pressed and Vegetable Oils" loading="lazy" />
+        </div>
+        <div class="ingredient-info">
+          <h3>Cold Pressed Oil, Vegetable Oil & Oleoresin</h3>
+          <p data-lang-id="Minyak tekan dingin, minyak nabati, dan oleoresin berkualitas untuk berbagai kebutuhan industri." data-lang-en="High-quality cold pressed oils, vegetable oils, and oleoresins for various industrial needs.">
+            Minyak tekan dingin, minyak nabati, dan oleoresin berkualitas untuk berbagai kebutuhan industri.
+          </p>
+          <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Ingredient Item 4 -->
+      <div class="ingredient-card">
+        <div class="ingredient-img-wrapper">
+          <img src="https://images.unsplash.com/photo-1632243575963-3143700087ed?auto=format&fit=crop&q=80&w=800" alt="Aromatherapy Water" loading="lazy" />
+        </div>
+        <div class="ingredient-info">
+          <h3>Aromatherapy Water</h3>
+          <p data-lang-id="Hydrosol dan aromatherapy water dari hasil sulingan bahan alam untuk aromaterapi dan kosmetik." data-lang-en="Hydrosols and aromatherapy waters distilled from natural ingredients for aromatherapy and cosmetics.">
+            Hydrosol dan aromatherapy water dari hasil sulingan bahan alam untuk aromaterapi dan kosmetik.
+          </p>
+          <a href="#contact" class="link-detail" data-lang-id="Lihat Lebih Detail" data-lang-en="View Details">Lihat Lebih Detail &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ingredients-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .ingredient-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s ease;
+  }
+  .ingredient-card:hover {
+    border-color: var(--primary-light);
+  }
+  .ingredient-img-wrapper {
+    height: 220px;
+    width: 100%;
+    overflow: hidden;
+    background: #eee;
+  }
+  .ingredient-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .ingredient-info {
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .ingredient-info h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--primary-dark);
+  }
+  .ingredient-info p {
+    font-size: 0.925rem;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    flex: 1;
+  }
+  .link-detail {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    display: inline-block;
+  }
+  .link-detail:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 1024px) {
+    .ingredients-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .ingredients-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

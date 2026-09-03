@@ -1,12 +1,15 @@
 ---
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import WhatsAppButton from '../components/WhatsAppButton.astro';
+import { company } from '../data/company';
+import '../styles/global.css';
 
 interface Props {
   title?: string;
 }
 
-const { title = "Hero Ingredients - High Quality Natural Raw Materials" } = Astro.props;
+const { title = company.meta.defaultTitle } = Astro.props;
 ---
 
 <!doctype html>
@@ -34,22 +37,34 @@ const { title = "Hero Ingredients - High Quality Natural Raw Materials" } = Astr
     <!-- Footer ditampilkan di bawah semua halaman -->
     <Footer />
 
-    <!-- SCRIPT MULTI-BAHASA GLOBAL (AUTOSWITCH) -->
+    <!-- Tombol WhatsApp melayang, sekali untuk semua halaman -->
+    <WhatsAppButton />
+
+    <!--
+      SCRIPT GLOBAL (SATU-SATUNYA MESIN):
+      1. Multi-bahasa (autoswitch ID/EN)
+      2. Menu mobile (hamburger)
+      Dipasang is:inline agar berjalan sebelum first paint.
+    -->
     <script is:inline>
-      // 1. Fungsi Utama untuk Mengubah Bahasa Teks di Seluruh Halaman
+      // ============================================
+      // 1. MULTI-BAHASA
+      // ============================================
+      const LANG_KEY = 'selectedLanguage';
+
       function applyLanguage(lang) {
-        localStorage.setItem('selectedLanguage', lang);
+        localStorage.setItem(LANG_KEY, lang);
         document.documentElement.lang = lang;
 
-        // Cari semua elemen yang memiliki atribut data-lang-id & data-lang-en
+        // Ganti teks semua elemen ber-atribut data-lang-id & data-lang-en
         const elements = document.querySelectorAll('[data-lang-id][data-lang-en]');
-        
+
         elements.forEach((el) => {
           const textId = el.getAttribute('data-lang-id');
           const textEn = el.getAttribute('data-lang-en');
 
           if (lang === 'en' && textEn) {
-            // Jika elemen berupa input/textarea placeholder
+            // Placeholder untuk input/textarea
             if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
               el.setAttribute('placeholder', textEn);
             } else {
@@ -64,7 +79,7 @@ const { title = "Hero Ingredients - High Quality Natural Raw Materials" } = Astr
           }
         });
 
-        // Update status aktif pada tombol switcher bahasa di Navbar (jika ada)
+        // Update status aktif tombol bahasa (Navbar/Footer)
         const langBtns = document.querySelectorAll('.lang-btn, [data-lang]');
         langBtns.forEach((btn) => {
           const btnLang = btn.getAttribute('data-lang');
@@ -76,51 +91,61 @@ const { title = "Hero Ingredients - High Quality Natural Raw Materials" } = Astr
         });
       }
 
-      // 2. Jalankan Penerjemah Otomatis Saat DOM / Halaman Siap
       function initLanguage() {
-        const savedLang = localStorage.getItem('selectedLanguage') || 'id';
+        const savedLang = localStorage.getItem(LANG_KEY) || 'id';
         applyLanguage(savedLang);
+      }
 
-        // Pasang Event Listener pada Tombol Bahasa di Navbar/Footer
-        document.addEventListener('click', (e) => {
-          const target = e.target.closest('[data-lang]');
-          if (target) {
-            e.preventDefault();
-            const chosenLang = target.getAttribute('data-lang');
-            if (chosenLang) {
-              applyLanguage(chosenLang);
-            }
+      // Delegasi klik untuk semua elemen [data-lang]
+      document.addEventListener('click', (e) => {
+        const target = e.target.closest('[data-lang]');
+        if (target) {
+          e.preventDefault();
+          const chosenLang = target.getAttribute('data-lang');
+          if (chosenLang) {
+            applyLanguage(chosenLang);
           }
+        }
+      });
+
+      // ============================================
+      // 2. MENU MOBILE (HAMBURGER)
+      // ============================================
+      function initMobileMenu() {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const navMenu = document.getElementById('nav-menu');
+        if (!hamburgerBtn || !navMenu) return;
+
+        hamburgerBtn.addEventListener('click', () => {
+          const isOpen = hamburgerBtn.classList.toggle('open');
+          navMenu.classList.toggle('active');
+          hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+          document.body.classList.toggle('menu-open', isOpen);
+        });
+
+        // Tutup menu setelah link diklik
+        navMenu.querySelectorAll('.nav-link').forEach((link) => {
+          link.addEventListener('click', () => {
+            hamburgerBtn.classList.remove('open');
+            navMenu.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('menu-open');
+          });
         });
       }
 
-      // Inisialisasi saat pertama kali dimuat
+      // ============================================
+      // INISIALISASI
+      // ============================================
       if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initLanguage);
+        document.addEventListener('DOMContentLoaded', () => {
+          initLanguage();
+          initMobileMenu();
+        });
       } else {
         initLanguage();
+        initMobileMenu();
       }
     </script>
   </body>
 </html>
-
-<style is:global>
-  :root {
-    --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  }
-
-  html,
-  body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    min-height: 100vh;
-    font-family: var(--font-family);
-    scroll-behavior: smooth;
-  }
-
-  body {
-    display: flex;
-    flex-direction: column;
-  }
-</style>

@@ -1,11 +1,13 @@
-const mysql = require('mysql2/promise');
+// Konfigurasi koneksi MySQL.
+// Nilai default dipakai bila Backend/.env tidak ada atau kosong.
+require('dotenv').config();
 
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'magna_ingredients',
-  port: 3306,
+const pool = require('mysql2/promise').createPool({
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'magna_ingredients',
+  port: Number(process.env.DB_PORT) || 3306,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0

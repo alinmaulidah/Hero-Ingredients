@@ -1,60 +1,45 @@
 ---
-const companyData = {
-  name: "PT Panca Nature Internasional",
-  address: "Jl. Jati Blok Pulo Seger, Plumbon, Kec. Indramayu, Kabupaten Indramayu, Jawa Barat 45215, Indonesia",
-  phone: "+62 21 8459 1234",
-  whatsapp: "+62 823 451 417",
-  email: "marketing@pancanature.com",
-};
+import { company } from '../data/company';
+
+// "INGREDIENTS" → "Ingredients" untuk tampilan footer
+const logoSubDisplay = company.brand.logoSub.charAt(0) + company.brand.logoSub.slice(1).toLowerCase();
 ---
 
 <footer class="footer">
   <div class="container footer-grid">
     <div class="footer-col address-col">
-      <div class="footer-logo">Magna<strong>Ingredients</strong></div>
-      <p class="address-text">{companyData.address}</p>
+      <div class="footer-logo">
+        {company.brand.logoMain}<strong>{logoSubDisplay}</strong>
+      </div>
+      <p class="address-text">{company.address.office.street}</p>
     </div>
 
     <div class="footer-col">
-      <h4>Navigasi</h4>
+      <h4 data-lang-id="Navigasi" data-lang-en="Navigation">Navigasi</h4>
       <ul class="footer-links">
-        <li><a href="#hero">Beranda</a></li>
-        <li><a href="#vision">Tentang Kami</a></li>
-        <li><a href="#process">Proses & Dampak</a></li>
-        <li><a href="#certifications">Sertifikasi</a></li>
+        {company.nav.map((item) => (
+          <li>
+            <a href={item.href} data-lang-id={item.labelId} data-lang-en={item.labelEn}>
+              {item.labelId}
+            </a>
+          </li>
+        ))}
       </ul>
     </div>
 
     <div class="footer-col">
-      <h4>Hubungi Kami</h4>
+      <h4 data-lang-id="Hubungi Kami" data-lang-en="Contact Us">Hubungi Kami</h4>
       <ul class="footer-contact">
-        <li><strong>Telp:</strong> {companyData.phone}</li>
-        <li><strong>WA:</strong> {companyData.whatsapp}</li>
-        <li><strong>Email:</strong> {companyData.email}</li>
-        <li><strong>Web:</strong> magnaingridients.com</li>
+        <li><strong>Telp:</strong> {company.contact.phoneDisplay}</li>
+        <li><strong>WA:</strong> {company.contact.whatsappDisplay}</li>
+        <li><strong>Email:</strong> {company.contact.email}</li>
+        <li><strong>Web:</strong> {company.contact.website}</li>
       </ul>
     </div>
   </div>
-
-  
 </footer>
 
 <style>
-  :root {
-    --primary-light: #52b788;
-    --white: #ffffff;
-  }
-
-  .container {
-    max-width: 1140px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  .text-center {
-    text-align: center;
-  }
-
   .footer {
     background-color: #0f2319;
     color: #d1d5db;
@@ -86,13 +71,15 @@ const companyData = {
     margin-bottom: 1.25rem;
   }
 
-  .footer-links, .footer-contact {
+  .footer-links,
+  .footer-contact {
     list-style: none;
     padding: 0;
     margin: 0;
   }
 
-  .footer-links li, .footer-contact li {
+  .footer-links li,
+  .footer-contact li {
     margin-bottom: 0.6rem;
     font-size: 0.9rem;
     color: #9ca3af;
@@ -110,23 +97,6 @@ const companyData = {
 
   .footer-contact strong {
     color: var(--white);
-  }
-
-  .footer-bottom {
-    border-top: 1px solid #1f3a2b;
-    padding-top: 2rem;
-  }
-
-  .tagline-footer {
-    font-style: italic;
-    color: var(--primary-light);
-    font-size: 0.95rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .copyright {
-    font-size: 0.85rem;
-    color: #6b7280;
   }
 
   @media (max-width: 900px) {
