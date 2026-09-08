@@ -1,0 +1,351 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pesanan" active="orders">
+
+  <div class="page-head">
+    <div>
+      <h1>Pesanan</h1>
+      <div class="subtitle">
+        Status pembayaran diperbarui otomatis dari notifikasi Midtrans
+        (halaman disegarkan otomatis tiap beberapa detik).
+      </div>
+    </div>
+  </div>
+
+  <!-- Banner pesanan baru dibayar -->
+  <div class="notice-banner" id="paid-banner">
+    <span id="paid-banner-text"></span>
+    <button type="button" class="btn btn-sm btn-primary" id="ack-paid-btn">Sudah saya lihat</button>
+  </div>
+
+  <div class="card">
+    <div class="filter-bar">
+      <div class="field">
+        <label for="filter-status">Status Pesanan</label>
+        <select id="filter-status" class="input">
+          <option value="">Semua status</option>
+          <option value="pending">Pending</option>
+          <option value="processed">Diproses</option>
+          <option value="shipped">Dikirim</option>
+          <option value="completed">Selesai</option>
+          <option value="cancelled">Dibatalkan</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="filter-payment">Status Pembayaran</label>
+        <select id="filter-payment" class="input">
+          <option value="">Semua pembayaran</option>
+          <option value="paid">Dibayar</option>
+          <option value="pending">Pending</option>
+          <option value="cancelled">Batal</option>
+          <option value="refunded">Refund</option>
+        </select>
+      </div>
+
+      <div class="toolbar-actions" style="margin-left: auto;">
+        <span class="muted" id="updated-at"></span>
+        <button type="button" class="btn" id="refresh-btn">Segarkan</button>
+      </div>
+    </div>
+
+    <div id="orders-list">
+      <div class="loading">Memuat pesanan…</div>
+    </div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  import { escapeHtml } from '../../lib/catalogHtml';
+  import { fetchOrders, updateOrderStatus, type OrderDto } from '../../lib/admin/api';
+
+  const ORDER_STATUSES = ['pending', 'processed', 'shipped', 'completed', 'cancelled'];
+  const STATUS_LABEL: Record<string, string> = {
+    pending: 'Pending',
+    processed: 'Diproses',
+    shipped: 'Dikirim',
+    completed: 'Selesai',
+    cancelled: 'Dibatalkan',
+    paid: 'Dibayar',
+    refunded: 'Refund',
+    capture: 'Dibayar',
+    settlement: 'Dibayar',
+    deny: 'Ditolak',
+    expire: 'Kedaluwarsa',
+    failure: 'Gagal'
+  };
+
+  const listEl = document.getElementById('orders-list');
+  const updatedAtEl = document.getElementById('updated-at');
+  const paidBanner = document.getElementById('paid-banner');
+  const paidBannerText = document.getElementById('paid-banner-text');
+
+  /** ID order yang pernah terlihat berstatus paid (untuk deteksi "baru"). */
+  const knownPaidIds = new Set<string>();
+  let unreadPaidCount = 0;
+
+  function formatIDR(value: number): string {
+    return `Rp ${(Number(value) || 0).toLocaleString('id-ID')}`;
+  }
+
+  function formatDate(iso: string): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function statusBadge(status: string): string {
+    return `<span class="badge badge-${escapeHtml(status)}">${escapeHtml(STATUS_LABEL[status] || status)}</span>`;
+  }
+
+  function statusOptions(current: string): string {
+    return ORDER_STATUSES.map(
+      (status) =>
+        `<option value="${status}" ${status === current ? 'selected' : ''}>${
+          STATUS_LABEL[status] || status
+        }</option>`
+    ).join('');
+  }
+
+  function itemsText(order: OrderDto): string {
+    if (!order.items || !order.items.length) {
+      return '<div class="muted">Tidak ada item.</div>';
+    }
+    const items = order.items
+      .map(
+        (item) => `
+          <li>
+            <span>${escapeHtml(item.name)} &times; ${item.quantity}</span>
+            <strong>${formatIDR(item.unitPrice * item.quantity)}</strong>
+          </li>`
+      )
+      .join('');
+    return `<ul class="order-items-list">${items}</ul>`;
+  }
+
+  function renderOrders(orders: OrderDto[], newPaidIds: Set<string>): void {
+    if (!listEl) return;
+
+    if (orders.length === 0) {
+      listEl.innerHTML = `<div class="empty-state">Tidak ada pesanan dengan filter ini.</div>`;
+      return;
+    }
+
+    const rows = orders
+      .map((order) => {
+        const isNew = newPaidIds.has(order.orderId);
+        const payBadge = statusBadge(order.transactionStatus);
+        const fulfillBadge = statusBadge(order.orderStatus);
+
+        return `
+          <tr class="${isNew ? 'order-row-new' : ''}" data-row="${escapeHtml(order.orderId)}">
+            <td>
+              <button type="button" class="btn btn-sm" data-toggle-detail="${escapeHtml(order.orderId)}">Detail</button>
+            </td>
+            <td class="muted">${escapeHtml(order.orderId)}</td>
+            <td class="muted">${escapeHtml(formatDate(order.createdAt))}</td>
+            <td>
+              ${escapeHtml(order.customerName || '—')}
+              <div class="muted">${escapeHtml(order.customerEmail || '')}</div>
+            </td>
+            <td class="num">${formatIDR(order.grossAmount)}</td>
+            <td>${payBadge}<div class="muted">${escapeHtml(order.paymentType || '')}</div></td>
+            <td>
+              <select class="input status-select" data-order-id="${order.id}" data-order-public="${escapeHtml(order.orderId)}">
+                ${statusOptions(order.orderStatus)}
+              </select>
+            </td>
+          </tr>
+
+          <tr class="order-detail" data-detail="${escapeHtml(order.orderId)}" hidden>
+            <td colspan="7">
+              <div class="detail-inner">
+                <strong>Isi pesanan</strong>${itemsText(order)}
+                <div style="margin-top:0.6rem;">
+                  <strong>Customer:</strong>
+                  ${escapeHtml(order.customerName || '—')} •
+                  ${escapeHtml(order.customerEmail || '—')} •
+                  ${escapeHtml(order.customerPhone || '—')}
+                </div>
+              </div>
+            </td>
+          </tr>`;
+      })
+      .join('');
+
+    listEl.innerHTML = `
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Order ID</th>
+              <th>Tanggal</th>
+              <th>Customer</th>
+              <th class="num">Total</th>
+              <th>Pembayaran</th>
+              <th>Status Pesanan</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function updateBanner(): void {
+    if (!paidBanner || !paidBannerText) return;
+    if (unreadPaidCount > 0) {
+      paidBannerText.textContent =
+        unreadPaidCount === 1
+          ? '1 pesanan baru berstatus dibayar!'
+          : `${unreadPaidCount} pesanan baru berstatus dibayar!`;
+      paidBanner.classList.add('show');
+    } else {
+      paidBanner.classList.remove('show');
+    }
+  }
+
+  let loadInProgress = false;
+
+  async function loadOrders(): Promise<void> {
+    if (loadInProgress) return;
+    loadInProgress = true;
+
+    const statusEl = document.getElementById('filter-status') as HTMLSelectElement | null;
+    const paymentEl = document.getElementById('filter-payment') as HTMLSelectElement | null;
+
+    try {
+      const orders = await fetchOrders({
+        status: statusEl?.value || undefined,
+        payment: paymentEl?.value || undefined
+      });
+
+      const paidNow = orders.filter((order) => order.transactionStatus === 'paid');
+      const newlyPaid = new Set<string>();
+      let newCount = 0;
+
+      for (const order of paidNow) {
+        if (!knownPaidIds.has(order.orderId)) {
+          newlyPaid.add(order.orderId);
+          newCount += 1;
+        }
+        knownPaidIds.add(order.orderId);
+      }
+
+      // Hindari salah hitung saat filter dibatasi: hanya banner bila filter "semua".
+      const noFilter = !statusEl?.value && !paymentEl?.value;
+      if (noFilter) {
+        unreadPaidCount += newCount;
+      } else {
+        newlyPaid.clear();
+      }
+
+      renderOrders(orders, newlyPaid);
+      updateBanner();
+
+      if (updatedAtEl) {
+        updatedAtEl.textContent = `Diperbarui ${new Date().toLocaleTimeString('id-ID')}`;
+      }
+    } catch (error) {
+      if (listEl) {
+        listEl.innerHTML = `<div class="alert alert-error">${
+          error instanceof Error ? escapeHtml(error.message) : 'Gagal memuat pesanan.'
+        }</div>`;
+      }
+    } finally {
+      loadInProgress = false;
+    }
+  }
+
+  /* Toggle detail baris */
+  listEl?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-toggle-detail]');
+    if (!btn) return;
+
+    const orderId = btn.dataset.toggleDetail;
+    if (!orderId) return;
+
+    const detailRow = listEl.querySelector<HTMLTableRowElement>(`tr[data-detail="${CSS.escape(orderId)}"]`);
+    if (detailRow) {
+      detailRow.hidden = !detailRow.hidden;
+    }
+  });
+
+  /* Ubah status pemenuhan */
+  listEl?.addEventListener('focus', (e) => {
+    const select = (e.target as HTMLElement | null)?.closest<HTMLSelectElement>('.status-select');
+    if (select) {
+      select.dataset.previousValue = select.value;
+    }
+  });
+
+  listEl?.addEventListener('change', async (e) => {
+    const select = (e.target as HTMLElement | null)?.closest<HTMLSelectElement>('.status-select');
+    if (!select) return;
+
+    const orderId = Number(select.dataset.orderId);
+    const orderPublic = select.dataset.orderPublic || '';
+    const status = select.value;
+
+    if (!orderId) return;
+
+    try {
+      await updateOrderStatus(orderId, status);
+      select.dataset.previousValue = status;
+      // sudah sukses, nilai select sudah sesuai — tampilkan pesan singkat
+      const tbody = select.closest('tbody');
+      if (tbody) {
+        tbody.insertAdjacentHTML(
+          'afterbegin',
+          `<tr><td colspan="7"><div class="alert alert-success" style="margin:0;">Status ${escapeHtml(status)} disimpan untuk ${escapeHtml(orderPublic)}.</div></td></tr>`
+        );
+      }
+    } catch (error) {
+      select.value = select.dataset.previousValue || '';
+      if (listEl) {
+        listEl.insertAdjacentHTML(
+          'beforeend',
+          `<div class="alert alert-error">Gagal mengubah status: ${
+            error instanceof Error ? escapeHtml(error.message) : 'terjadi kesalahan'
+          }</div>`
+        );
+      }
+    }
+  });
+
+  document.getElementById('refresh-btn')?.addEventListener('click', loadOrders);
+
+  document.getElementById('filter-status')?.addEventListener('change', () => {
+    loadOrders();
+  });
+
+  document.getElementById('filter-payment')?.addEventListener('change', () => {
+    loadOrders();
+  });
+
+  document.getElementById('ack-paid-btn')?.addEventListener('click', () => {
+    unreadPaidCount = 0;
+    updateBanner();
+  });
+
+  loadOrders();
+
+  // Notifikasi pembayaran masuk: polling tiap 20 detik (jeda saat tab tidak aktif).
+  setInterval(() => {
+    if (!document.hidden) {
+      loadOrders();
+    }
+  }, 20000);
+</script>

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(dir Frontend\\public\\images\\products 2>nul && echo --- && dir Frontend\\public\\images 2>nul)",
+      "Shell(npm:*)",
+      "Shell(powershell -Command \"(Invoke-WebRequest -Uri 'http://localhost:4321/products' -UseBasicParsing -TimeoutSec 15).StatusCode\")",
+      "Shell(powershell -Command \"Start-Sleep -Seconds 4; (Invoke-WebRequest -Uri 'http://localhost:4321/products' -UseBasicParsing -TimeoutSec 15).StatusCode\")",
+      "Shell(agent-browser:*)",
+      "Shell(git:*)",
+      "Shell(findstr:*)",
+      "Shell(mkdir:*)",
+      "Shell(del:*)",
+      "Shell(taskkill:*)",
+      "Shell(powershell -Command \"Start-Sleep -Seconds 5; (Invoke-WebRequest -Uri 'http://localhost:4321/products' -UseBasicParsing -TimeoutSec 20).StatusCode\")",
+      "Shell(powershell -Command \"Get-Content 'C:\\Users\\acer\\AppData\\Local\\Temp\\commandcode\\shellout\\2026-09-07T03-33-54-924Z-s2zh9hkf.log' -Tail 30\")",
+      "Shell(tasklist:*)",
+      "powershell",
+      "Shell(powershell -NoProfile -Command \"Get-NetTCPConnection -State Listen | Where-Object { $_.LocalPort -in 4321,4322,3000 } | Select-Object LocalPort,OwningProcess | Format-Table -AutoSize\")",
+      "Shell(curl -s -o NUL -w \"HTTP %{http_code}\" http://localhost:4321/products)",
+      "Shell(echo:*)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

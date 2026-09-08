@@ -1,0 +1,99 @@
+-- ============================================================
+-- Hero Ingredients — Schema Backend (Express/MySQL)
+-- Idempotent: pakai IF NOT EXISTS, aman dijalankan berulang.
+-- Jalankan lewat `npm run db:schema` di folder Backend/.
+-- Tabel lama `products` (jika ada) TIDAK disentuh.
+-- ============================================================
+
+-- Akun admin (auth JWT)
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('admin') NOT NULL DEFAULT 'admin',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_email (email)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Katalog: grup bahan baku (mirror Frontend/src/data/products.ts, mis. 'Turmeric (Kunyit)')
+CREATE TABLE IF NOT EXISTS product_groups (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  slug VARCHAR(100) NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_product_groups_slug (slug)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Katalog: opsi olahan dalam satu grup (mis. 'Dry Slice Fine')
+CREATE TABLE IF NOT EXISTS product_options (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  group_id INT UNSIGNED NOT NULL,
+  slug VARCHAR(150) NOT NULL,
+  name VARCHAR(150) NOT NULL,
+  spec VARCHAR(100) NULL,
+  grade VARCHAR(50) NULL,
+  category VARCHAR(100) NULL,
+  image_url VARCHAR(255) NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_product_options (group_id, slug),
+  CONSTRAINT fk_product_options_group
+    FOREIGN KEY (group_id) REFERENCES product_groups (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Katalog: varian ukuran + harga 4 mata uang per opsi
+CREATE TABLE IF NOT EXISTS product_variants (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  option_id INT UNSIGNED NOT NULL,
+  size VARCHAR(50) NOT NULL,
+  price_idr INT NOT NULL DEFAULT 0,
+  price_usd DECIMAL(12,2) NULL,
+  price_aed DECIMAL(12,2) NULL,
+  price_eur DECIMAL(12,2) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_product_variants (option_id, size),
+  CONSTRAINT fk_product_variants_option
+    FOREIGN KEY (option_id) REFERENCES product_options (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Order transaksi (gross_amount dalam IDR seperti dikirim ke Midtrans)
+CREATE TABLE IF NOT EXISTS orders (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id VARCHAR(40) NOT NULL COMMENT 'ID publik Midtrans, format MAGNA-<timestamp>',
+  gross_amount INT NOT NULL DEFAULT 0,
+  currency CHAR(3) NOT NULL DEFAULT 'IDR',
+  customer_name VARCHAR(150) NULL,
+  customer_email VARCHAR(150) NULL,
+  customer_phone VARCHAR(30) NULL,
+  transaction_status VARCHAR(30) NOT NULL DEFAULT 'pending' COMMENT 'pending|paid|cancelled|refunded (hasil map webhook)',
+  order_status ENUM('pending','processed','shipped','completed','cancelled') NOT NULL DEFAULT 'pending' COMMENT 'status pemenuhan pesanan oleh admin',
+  payment_type VARCHAR(30) NULL,
+  snap_token VARCHAR(255) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_orders_order_id (order_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Snapshot item per order (nama/price disalin saat order dibuat)
+CREATE TABLE IF NOT EXISTS order_items (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  order_id_fk INT UNSIGNED NOT NULL COMMENT 'FK ke orders.id',
+  name VARCHAR(150) NOT NULL,
+  unit_price INT NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_order_items_order
+    FOREIGN KEY (order_id_fk) REFERENCES orders (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

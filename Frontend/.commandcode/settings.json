@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(npm:*)",
+      "powershell",
+      "Shell(node server.js)",
+      "Shell(curl -s http://localhost:5000/api)",
+      "Shell(curl -s -o NUL -w %%{http_code} http://localhost:5000/api/unknown)",
+      "Shell(curl -s http://localhost:5000/api/unknown)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

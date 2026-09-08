@@ -1,0 +1,94 @@
+---
+import { company } from '../data/company';
+import '../styles/admin.css';
+
+interface Props {
+  title?: string;
+  active?: 'dashboard' | 'products' | 'orders';
+}
+
+const { title = 'Dashboard', active } = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>{title} — Admin {company.brand.siteName}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Guard: halaman admin wajib login (token di localStorage). -->
+    <script is:inline>
+      (function () {
+        var token = localStorage.getItem('hero_admin_token');
+        var path = window.location.pathname;
+        var isLoginPage = path.replace(/\/+$/, '').endsWith('/admin/login');
+        if (!token && !isLoginPage) {
+          window.location.replace('/admin/login');
+        }
+      })();
+    </script>
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+
+      <!-- ============ SIDEBAR ============ -->
+      <aside class="admin-sidebar">
+        <div class="admin-brand">
+          <span class="logo-main">{company.brand.logoMain}</span>
+          <span class="logo-sub">{company.brand.logoSub}</span>
+          <span class="logo-tag">Admin</span>
+        </div>
+
+        <nav class="admin-nav" aria-label="Menu admin">
+          <a href="/admin/" class={active === 'dashboard' ? 'active' : ''}>Dashboard</a>
+          <a href="/admin/products/" class={active === 'products' ? 'active' : ''}>Produk</a>
+          <a href="/admin/orders/" class={active === 'orders' ? 'active' : ''}>Pesanan</a>
+          <a href="/" class="nav-home">← Lihat Website</a>
+        </nav>
+      </aside>
+
+      <!-- ============ KONTEN ============ -->
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <div class="topbar-user">
+            <div class="user-avatar" id="admin-avatar">A</div>
+            <div class="user-meta">
+              <strong id="admin-name">Admin</strong>
+              <span id="admin-email"></span>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm" id="logout-btn">Keluar</button>
+        </header>
+
+        <main class="admin-content">
+          <slot />
+        </main>
+      </div>
+
+    </div>
+
+    <script>
+      import { getStoredUser, logout } from '../lib/admin/api';
+
+      const user = getStoredUser();
+      if (user) {
+        const nameEl = document.getElementById('admin-name');
+        const emailEl = document.getElementById('admin-email');
+        const avatarEl = document.getElementById('admin-avatar');
+        if (nameEl) nameEl.textContent = user.name;
+        if (emailEl) emailEl.textContent = user.email;
+        if (avatarEl) avatarEl.textContent = (user.name || 'A').charAt(0).toUpperCase();
+      }
+
+      document.getElementById('logout-btn')?.addEventListener('click', () => logout());
+    </script>
+  </body>
+</html>

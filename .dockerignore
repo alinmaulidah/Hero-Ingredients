@@ -1,0 +1,8 @@
+# Buat build Docker dari root repo lebih ringan
+**/node_modules
+**/dist
+**/.astro
+.git
+.commandcode
+**/.env
+*.log

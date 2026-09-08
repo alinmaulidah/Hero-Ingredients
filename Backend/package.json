@@ -4,16 +4,24 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "db:schema": "node scripts/runSchema.js",
+    "db:inspect": "node scripts/inspect-db.js",
+    "seed:admin": "node scripts/seedAdmin.js",
+    "seed:catalog": "node scripts/seedCatalog.js",
+    "seed:sheet": "node scripts/seedSheetCatalog.js",
+    "simulate:payment": "node scripts/simulatePayment.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.1"
   },
   "devDependencies": {

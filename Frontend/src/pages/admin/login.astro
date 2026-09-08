@@ -1,0 +1,117 @@
+---
+import { company } from '../../data/company';
+import '../../styles/admin.css';
+
+const { logoMain, logoSub } = company.brand;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>Login Admin — {company.brand.siteName}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Sudah login? langsung ke dashboard. -->
+    <script is:inline>
+      (function () {
+        if (localStorage.getItem('hero_admin_token')) {
+          window.location.replace('/admin/');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <main class="login-page">
+      <div class="login-card">
+
+        <div class="login-brand">
+          <span class="logo-main">{logoMain}</span>
+          <span class="logo-sub">{logoSub} — ADMIN</span>
+        </div>
+
+        <h1>Masuk ke Panel Admin</h1>
+        <p class="login-sub">Gunakan akun admin untuk mengelola produk &amp; pesanan.</p>
+
+        <div id="login-error" class="alert alert-error" hidden></div>
+
+        <form id="login-form">
+          <div class="form-row">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              class="input"
+              placeholder="admin@example.com"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <div class="form-row">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              class="input"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="login-btn">Masuk</button>
+        </form>
+
+        <a class="login-back" href="/">← Kembali ke website</a>
+
+      </div>
+    </main>
+
+    <script>
+      import { login, saveAuth } from '../../lib/admin/api';
+
+      const form = document.getElementById('login-form') as HTMLFormElement | null;
+      const errorBox = document.getElementById('login-error');
+      const submitBtn = document.getElementById('login-btn') as HTMLButtonElement | null;
+
+      form?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+        const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+
+        if (errorBox) errorBox.hidden = true;
+        if (submitBtn) {
+          submitBtn.textContent = 'Memproses...';
+          submitBtn.disabled = true;
+        }
+
+        try {
+          const result = await login(email, password);
+          saveAuth(result.token, result.user);
+          window.location.replace('/admin/');
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Gagal login. Silakan coba lagi.';
+          if (errorBox) {
+            errorBox.textContent = message;
+            errorBox.hidden = false;
+          }
+          if (submitBtn) {
+            submitBtn.textContent = 'Masuk';
+            submitBtn.disabled = false;
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

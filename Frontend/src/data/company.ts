@@ -18,7 +18,7 @@ export const company = {
     // Dipilih "Hero Ingredients" karena konsisten: DB magna_ingredients, order id "MAGNA-*",
     // pesan API "MAGNA API", dan logo footer.
     siteName: 'Hero Ingredients',
-    logoMain: 'Hero',
+    logoMain: 'HERO',
     logoSub: 'INGREDIENTS',
     ariaLabel: 'Hero Ingredients',
 
@@ -34,8 +34,8 @@ export const company = {
 
   /** Info kontak */
   contact: {
-    // verifikasi: dua email berbeda sebelumnya (marketing@pancanature.com vs info@naturalingredients.co.id).
-    email: 'marketing@pancanature.com',
+    // Email resmi yang dipakai di footer, halaman kontak, dsb.
+    email: 'info@heroingredient.com',
     // verifikasi: typo "magnaingridients.com" di Footer lama diperbaiki. Cek juga apakah domain
     // asli = indonesiaingredient.com (astro.config.mjs) atau magnaingredients.com.
     website: 'magnaingredients.com',

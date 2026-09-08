@@ -7,9 +7,11 @@ import '../styles/global.css';
 
 interface Props {
   title?: string;
+  /** CSS tambahan per halaman (mis. "/styles/products.css"). */
+  stylesheet?: string;
 }
 
-const { title = company.meta.defaultTitle } = Astro.props;
+const { title = company.meta.defaultTitle, stylesheet } = Astro.props;
 ---
 
 <!doctype html>
@@ -26,6 +28,8 @@ const { title = company.meta.defaultTitle } = Astro.props;
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    {stylesheet && <link rel="stylesheet" href={stylesheet} />}
   </head>
   <body>
     <!-- Navbar ditampilkan di atas semua halaman -->

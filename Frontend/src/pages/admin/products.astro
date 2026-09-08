@@ -1,0 +1,556 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Kelola Produk" active="products">
+
+  <div class="page-head">
+    <div>
+      <h1>Kelola Produk</h1>
+      <div class="subtitle">
+        Data ini juga tampil di halaman <a href="/products">/products</a> (storefront)
+        secara otomatis tanpa build ulang.
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-add-group">+ Tambah Produk</button>
+  </div>
+
+  <div id="flash"></div>
+
+  <!-- Panel tambah produk baru -->
+  <div class="card" id="add-group-panel" hidden>
+    <div class="card-title">Produk Baru</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="new-group-name">Nama Produk</label>
+        <input id="new-group-name" class="input" placeholder="mis. Turmeric (Kunyit)" />
+        <div class="hint">Slug dibuat otomatis dari nama.</div>
+      </div>
+    </div>
+    <div class="editor-actions">
+      <button type="button" class="btn" data-action="cancel-add-group">Batal</button>
+      <button type="button" class="btn btn-primary" data-action="save-add-group">Simpan Produk</button>
+    </div>
+  </div>
+
+  <div id="groups-container">
+    <div class="loading">Memuat produk…</div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  import { escapeHtml } from '../../lib/catalogHtml';
+  import {
+    createGroup,
+    updateGroup,
+    deleteGroup,
+    createOption,
+    updateOption,
+    deleteOption,
+    createVariant,
+    updateVariant,
+    deleteVariant,
+    fetchProducts,
+    type ProductGroupDto,
+    type ProductOptionDto,
+    type ProductVariantDto
+  } from '../../lib/admin/api';
+
+  const groupsContainer = document.getElementById('groups-container');
+  const flashEl = document.getElementById('flash');
+  const addGroupPanel = document.getElementById('add-group-panel');
+
+  let groups: ProductGroupDto[] = [];
+
+  /* =========================================
+     UTIL
+  ========================================== */
+
+  function formatIDR(value: number): string {
+    return `Rp ${(Number(value) || 0).toLocaleString('id-ID')}`;
+  }
+
+  function flash(message: string, type: 'error' | 'success'): void {
+    if (!flashEl) return;
+    flashEl.innerHTML = `<div class="alert alert-${type}">${escapeHtml(message)}</div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function numOrNull(value: string): number | null {
+    const text = String(value).trim();
+    if (text === '') return null;
+    const num = Number(text);
+    return Number.isNaN(num) ? null : num;
+  }
+
+  /* =========================================
+     RENDER LIST GRUP
+  ========================================== */
+
+  function renderGroupCard(group: ProductGroupDto): string {
+    const optionsHtml = group.options.length
+      ? group.options.map((option) => renderOptionBlock(group.id, option)).join('')
+      : `<div class="empty-state" style="padding:1rem;">Belum ada jenis olahan untuk produk ini.</div>`;
+
+    return `
+      <div class="product-group" data-group-id="${group.id}">
+        <div class="product-group-head">
+          <h3>${escapeHtml(group.name)}</h3>
+          <span class="slug">/${escapeHtml(group.slug)}</span>
+          <div class="product-group-actions">
+            <button type="button" class="btn btn-sm" data-action="edit-group" data-group-id="${group.id}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" data-action="delete-group" data-group-id="${group.id}">Hapus</button>
+          </div>
+        </div>
+
+        <div data-group-editor></div>
+
+        ${optionsHtml}
+
+        <div data-new-option-editor></div>
+
+        <div style="padding:0.7rem 1.2rem 1rem;">
+          <button type="button" class="btn btn-sm" data-action="add-option" data-group-id="${group.id}">+ Tambah Jenis Olahan</button>
+        </div>
+      </div>`;
+  }
+
+  function renderOptionBlock(groupId: number, option: ProductOptionDto): string {
+    const tags = [
+      option.spec ? `<span class="chip">${escapeHtml(option.spec)}</span>` : '',
+      option.grade ? `<span class="chip chip-green">${escapeHtml(option.grade)}</span>` : '',
+      option.category ? `<span class="chip">${escapeHtml(option.category)}</span>` : ''
+    ].join('');
+
+    const variantsSummary = option.variants.length
+      ? option.variants
+          .map((variant) => {
+            const firstPrice = Number(variant.priceIDR) || 0;
+            return `<span class="chip">${escapeHtml(variant.size)} • ${formatIDR(firstPrice)}</span>`;
+          })
+          .join('')
+      : '<span class="muted">Belum ada kemasan/varian.</span>';
+
+    return `
+      <div class="option-block" data-option-id="${option.id}">
+        <div class="option-head">
+          <h4>${escapeHtml(option.name)}</h4>
+          <div class="option-tags">${tags}</div>
+          <div class="option-actions">
+            <button type="button" class="btn btn-sm" data-action="edit-option"
+              data-group-id="${groupId}" data-option-id="${option.id}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" data-action="delete-option"
+              data-group-id="${groupId}" data-option-id="${option.id}">Hapus</button>
+          </div>
+        </div>
+        <div class="option-tags">${variantsSummary}</div>
+        <div data-option-editor></div>
+      </div>`;
+  }
+
+  function renderGroupList(): void {
+    if (!groupsContainer) return;
+    if (!groups.length) {
+      groupsContainer.innerHTML =
+        '<div class="card"><div class="empty-state">Belum ada produk. Klik <strong>+ Tambah Produk</strong> untuk mulai.</div></div>';
+      return;
+    }
+    groupsContainer.innerHTML = groups.map(renderGroupCard).join('');
+  }
+
+  /* =========================================
+     PANEL EDITOR — GROUP
+  ========================================== */
+
+  function groupEditorHtml(group: ProductGroupDto | null): string {
+    return `
+      <div class="editor-panel" data-group-editor data-group-id="${group ? group.id : ''}">
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Nama Produk</label>
+            <input class="input" data-field="name" value="${group ? escapeHtml(group.name) : ''}" placeholder="mis. Turmeric (Kunyit)" />
+          </div>
+          ${group ? `<div class="form-row"><label>Slug</label><input class="input" data-field="slug" value="${escapeHtml(group.slug)}" /></div>` : ''}
+        </div>
+        <div class="editor-actions">
+          <button type="button" class="btn" data-action="cancel-group">Batal</button>
+          <button type="button" class="btn btn-primary" data-action="save-group">Simpan</button>
+        </div>
+      </div>`;
+  }
+
+  function openGroupEditor(groupId: number): void {
+    const card = document.querySelector<HTMLElement>(`.product-group[data-group-id="${groupId}"]`);
+    const slot = card?.querySelector<HTMLElement>('[data-group-editor]');
+    const group = groups.find((g) => g.id === groupId);
+    if (!card || !slot || !group) return;
+    slot.innerHTML = groupEditorHtml(group);
+    const input = slot.querySelector<HTMLInputElement>('[data-field="name"]');
+    input?.focus();
+  }
+
+  /* =========================================
+     PANEL EDITOR — OPTION + VARIAN
+  ========================================== */
+
+  function variantRowsHtml(option: ProductOptionDto | null): string {
+    const rows = option
+      ? option.variants
+          .map(
+            (variant) => `
+          <tr data-variant-id="${variant.id}">
+            <td><input class="input" data-vsize value="${escapeHtml(variant.size)}" /></td>
+            <td><input class="input variant-price-input" data-price="IDR" type="number" min="0" step="1" value="${variant.priceIDR}" /></td>
+            <td><input class="input variant-price-input" data-price="USD" type="number" min="0" step="0.01" value="${variant.priceUSD ?? ''}" /></td>
+            <td><input class="input variant-price-input" data-price="AED" type="number" min="0" step="0.01" value="${variant.priceAED ?? ''}" /></td>
+            <td><input class="input variant-price-input" data-price="EUR" type="number" min="0" step="0.01" value="${variant.priceEUR ?? ''}" /></td>
+            <td>
+              <button type="button" class="btn btn-sm" data-action="save-variant" data-variant-id="${variant.id}">Simpan</button>
+              <button type="button" class="btn btn-sm btn-danger" data-action="delete-variant" data-variant-id="${variant.id}">Hapus</button>
+            </td>
+          </tr>`
+          )
+          .join('')
+      : '';
+
+    return `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Kemasan</th>
+            <th>Harga IDR</th>
+            <th>Harga USD</th>
+            <th>Harga AED</th>
+            <th>Harga EUR</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody data-variant-rows>${rows}</tbody>
+        <tfoot>
+          <tr>
+            <td><input class="input" data-add-vsize placeholder="mis. 100 g" /></td>
+            <td><input class="input variant-price-input" data-add-price="IDR" type="number" min="0" step="1" placeholder="50000" /></td>
+            <td><input class="input variant-price-input" data-add-price="USD" type="number" min="0" step="0.01" placeholder="2.78" /></td>
+            <td><input class="input variant-price-input" data-add-price="AED" type="number" min="0" step="0.01" placeholder="10.00" /></td>
+            <td><input class="input variant-price-input" data-add-price="EUR" type="number" min="0" step="0.01" placeholder="2.38" /></td>
+            <td>
+              <button type="button" class="btn btn-sm" data-action="add-variant">+ Varian</button>
+            </td>
+          </tr>
+        </tfoot>
+      </table>`;
+  }
+
+  function optionEditorHtml(groupId: number, option: ProductOptionDto | null): string {
+    const variantSection = option
+      ? `
+        <h5 style="margin-top:1rem;">Kemasan &amp; Harga</h5>
+        ${variantRowsHtml(option)}`
+      : `
+        <div class="hint" style="margin-top:0.6rem;">
+          Setelah jenis tersimpan, klik <strong>Edit</strong> pada jenis tersebut
+          untuk menambahkan kemasan &amp; harga (IDR/USD/AED/EUR).
+        </div>`;
+
+    return `
+      <div class="editor-panel" data-option-editor
+        data-group-id="${groupId}"
+        data-option-id="${option ? option.id : ''}">
+
+        <h5>${option ? 'Edit' : 'Tambah'} Jenis Olahan</h5>
+
+        <div class="form-grid">
+          <div class="form-row">
+            <label>Nama Jenis</label>
+            <input class="input" data-field="name" value="${option ? escapeHtml(option.name) : ''}" placeholder="mis. Dry Slice Fine" />
+          </div>
+          <div class="form-row">
+            <label>Spec</label>
+            <input class="input" data-field="spec" value="${option ? escapeHtml(option.spec || '') : ''}" placeholder="mis. Dry Slice / Mesh 20-60" />
+          </div>
+          <div class="form-row">
+            <label>Grade</label>
+            <input class="input" data-field="grade" value="${option ? escapeHtml(option.grade || '') : ''}" placeholder="mis. Fine / Eco" />
+          </div>
+          <div class="form-row">
+            <label>Kategori</label>
+            <input class="input" data-field="category" value="${option ? escapeHtml(option.category || '') : ''}" placeholder="mis. Dry Slices / Grind" />
+          </div>
+          <div class="form-row">
+            <label>URL Gambar</label>
+            <input class="input" data-field="imageUrl" value="${option ? escapeHtml(option.imageUrl || '') : ''}" placeholder="/images/products/….svg atau https://…" />
+          </div>
+        </div>
+
+        ${variantSection}
+
+        <div class="editor-actions">
+          <button type="button" class="btn" data-action="cancel-option">Tutup</button>
+          <button type="button" class="btn btn-primary" data-action="save-option">Simpan Jenis</button>
+        </div>
+      </div>`;
+  }
+
+  function openOptionEditor(groupId: number, optionId: number | null): void {
+    const card = document.querySelector<HTMLElement>(`.product-group[data-group-id="${groupId}"]`);
+    const group = groups.find((g) => g.id === groupId);
+    if (!card || !group) return;
+
+    let slot: HTMLElement | null;
+    let option: ProductOptionDto | null = null;
+
+    if (optionId !== null) {
+      option = group.options.find((o) => o.id === optionId) || null;
+      const optionBlock = card.querySelector<HTMLElement>(`.option-block[data-option-id="${optionId}"]`);
+      slot = optionBlock?.querySelector<HTMLElement>('[data-option-editor]') || null;
+    } else {
+      // opsi baru: taruh di bawah daftar opsi (sebelum tombol + Tambah Jenis)
+      slot = card.querySelector<HTMLElement>('[data-new-option-editor]') || null;
+    }
+
+    if (!slot) return;
+    slot.innerHTML = optionEditorHtml(groupId, option);
+  }
+
+  /* =========================================
+     MUATAN DATA & EVENT
+  ========================================== */
+
+  async function reloadGroups(): Promise<void> {
+    if (!groupsContainer) return;
+    try {
+      groups = await fetchProducts();
+      renderGroupList();
+    } catch (error) {
+      groupsContainer.innerHTML = `<div class="card"><div class="alert alert-error">${
+        error instanceof Error ? escapeHtml(error.message) : 'Gagal memuat produk.'
+      }</div></div>`;
+    }
+  }
+
+  function getEditorPanel(btn: HTMLElement): HTMLElement | null {
+    return btn.closest<HTMLElement>('[data-group-editor], [data-option-editor]');
+  }
+
+  function readOptionFields(panel: HTMLElement): Record<string, string> {
+    const read = (field: string): string => {
+      const input = panel.querySelector<HTMLInputElement>(`[data-field="${field}"]`);
+      return input ? input.value.trim() : '';
+    };
+    return {
+      name: read('name'),
+      spec: read('spec'),
+      grade: read('grade'),
+      category: read('category'),
+      imageUrl: read('imageUrl')
+    };
+  }
+
+  /** Baca satu baris varian (baris baru / edit). */
+  function readVariantFromRow(row: HTMLElement, prefix: 'add' | 'edit'): Record<string, unknown> | null {
+    const sizeEl = row.querySelector<HTMLInputElement>(
+      prefix === 'add' ? '[data-add-vsize]' : '[data-vsize]'
+    );
+    const price = (name: string): string => {
+      const input = row.querySelector<HTMLInputElement>(
+        prefix === 'add' ? `[data-add-price="${name}"]` : `[data-price="${name}"]`
+      );
+      return input ? input.value : '';
+    };
+
+    if (!sizeEl) return null;
+
+    const size = sizeEl.value.trim();
+    if (!size) {
+      throw new Error('Ukuran kemasan (size) wajib diisi.');
+    }
+
+    const payload: Record<string, unknown> = { size };
+    const idr = numOrNull(price('IDR'));
+    payload.priceIDR = idr === null ? 0 : idr;
+    payload.priceUSD = numOrNull(price('USD'));
+    payload.priceAED = numOrNull(price('AED'));
+    payload.priceEUR = numOrNull(price('EUR'));
+    return payload;
+  }
+
+  groupsContainer?.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement | null;
+    const btn = target?.closest<HTMLElement>('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action || '';
+    const groupId = Number(btn.dataset.groupId) || 0;
+    const optionId = Number(btn.dataset.optionId) || 0;
+    const variantId = Number(btn.dataset.variantId) || 0;
+
+    // Tombol di dalam panel editor (opsi/varian) tidak membawa ID —
+    // baca dari panel terdekat (data-option-editor berisi group & option id).
+    const editorPanel = btn.closest<HTMLElement>('[data-option-editor]');
+    const gid = groupId || (editorPanel ? Number(editorPanel.dataset.groupId) || 0 : 0);
+    const oid = optionId || (editorPanel ? Number(editorPanel.dataset.optionId) || 0 : 0);
+
+    try {
+      switch (action) {
+        /* ---------- GROUP ---------- */
+        case 'edit-group': {
+          openGroupEditor(groupId);
+          break;
+        }
+        case 'delete-group': {
+          const name = groups.find((g) => g.id === groupId)?.name || '';
+          if (!confirm(`Hapus produk "${name}" beserta semua jenis & variannya?`)) return;
+          await deleteGroup(groupId);
+          flash('Produk berhasil dihapus.', 'success');
+          await reloadGroups();
+          break;
+        }
+        case 'save-group': {
+          const panel = getEditorPanel(btn);
+          if (!panel) return;
+          const groupIdToSave = Number(panel.dataset.groupId);
+          if (!groupIdToSave) {
+            throw new Error('Produk tidak ditemukan.');
+          }
+          const nameInput = panel.querySelector<HTMLInputElement>('[data-field="name"]');
+          const slugInput = panel.querySelector<HTMLInputElement>('[data-field="slug"]');
+          if (!nameInput || !nameInput.value.trim()) {
+            throw new Error('Nama produk wajib diisi.');
+          }
+          await updateGroup(groupIdToSave, {
+            name: nameInput.value.trim(),
+            ...(slugInput?.value.trim() ? { slug: slugInput.value.trim() } : {})
+          });
+          flash('Produk berhasil diperbarui.', 'success');
+          await reloadGroups();
+          break;
+        }
+        case 'cancel-group': {
+          const card = btn.closest('.product-group');
+          const slot = card?.querySelector<HTMLElement>('[data-group-editor]');
+          if (slot) slot.innerHTML = '';
+          break;
+        }
+
+        /* ---------- OPTION ---------- */
+        case 'add-option': {
+          openOptionEditor(gid, null);
+          break;
+        }
+        case 'edit-option': {
+          openOptionEditor(gid, oid);
+          break;
+        }
+        case 'save-option': {
+          const panel = getEditorPanel(btn);
+          if (!panel) return;
+          const fields = readOptionFields(panel);
+          if (!fields.name) throw new Error('Nama jenis wajib diisi.');
+          if (!gid) throw new Error('Produk tidak ditemukan.');
+          if (oid) {
+            await updateOption(gid, oid, fields);
+            flash('Jenis olahan berhasil diperbarui.', 'success');
+          } else {
+            await createOption(gid, fields);
+            flash('Jenis olahan berhasil ditambahkan.', 'success');
+          }
+          await reloadGroups();
+          break;
+        }
+        case 'cancel-option': {
+          const panel = btn.closest<HTMLElement>('[data-option-editor]');
+          if (panel) panel.innerHTML = '';
+          break;
+        }
+        case 'delete-option': {
+          if (!confirm('Hapus jenis olahan ini beserta variannya?')) return;
+          await deleteOption(gid, oid);
+          flash('Jenis olahan berhasil dihapus.', 'success');
+          await reloadGroups();
+          break;
+        }
+
+        /* ---------- VARIAN ---------- */
+        case 'save-variant': {
+          const row = btn.closest<HTMLElement>('tr[data-variant-id]');
+          if (!row) return;
+          if (!gid || !oid) throw new Error('Simpan jenis olahan terlebih dahulu.');
+          const payload = readVariantFromRow(row, 'edit');
+          if (!payload) return;
+          await updateVariant(gid, oid, variantId, payload as never);
+          flash('Varian berhasil disimpan.', 'success');
+          await reloadGroups();
+          break;
+        }
+        case 'add-variant': {
+          const row = btn.closest<HTMLElement>('tr');
+          if (!row) return;
+          if (!gid || !oid) throw new Error('Simpan jenis olahan terlebih dahulu.');
+          const payload = readVariantFromRow(row, 'add');
+          if (!payload) return;
+          await createVariant(gid, oid, payload as never);
+          flash('Varian berhasil ditambahkan.', 'success');
+          await reloadGroups();
+          break;
+        }
+        case 'delete-variant': {
+          if (!confirm('Hapus varian ini?')) return;
+          await deleteVariant(gid, oid, variantId);
+          flash('Varian berhasil dihapus.', 'success');
+          await reloadGroups();
+          break;
+        }
+        default:
+          break;
+      }
+    } catch (error) {
+      flash(error instanceof Error ? error.message : 'Terjadi kesalahan.', 'error');
+    }
+  });
+
+  /* ---------- Tambah produk baru ---------- */
+  document.getElementById('btn-add-group')?.addEventListener('click', () => {
+    if (!addGroupPanel) return;
+    addGroupPanel.hidden = !addGroupPanel.hidden;
+    if (!addGroupPanel.hidden) {
+      const input = document.getElementById('new-group-name') as HTMLInputElement | null;
+      input?.focus();
+    }
+  });
+
+  addGroupPanel?.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement | null;
+    const btn = target?.closest<HTMLElement>('[data-action]');
+    if (!btn) return;
+
+    const action = btn.dataset.action || '';
+    if (action === 'cancel-add-group') {
+      addGroupPanel.hidden = true;
+      return;
+    }
+    if (action !== 'save-add-group') return;
+
+    const input = document.getElementById('new-group-name') as HTMLInputElement | null;
+    if (!input || !input.value.trim()) {
+      flash('Nama produk wajib diisi.', 'error');
+      return;
+    }
+
+    try {
+      await createGroup({ name: input.value.trim() });
+      input.value = '';
+      addGroupPanel.hidden = true;
+      flash('Produk baru berhasil dibuat. Sekarang tambahkan jenis olahan & variannya.', 'success');
+      await reloadGroups();
+    } catch (error) {
+      flash(error instanceof Error ? error.message : 'Gagal membuat produk.', 'error');
+    }
+  });
+
+  /* =========================================
+     INIT
+  ========================================== */
+
+  reloadGroups();
+</script>

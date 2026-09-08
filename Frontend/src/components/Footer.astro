@@ -1,15 +1,12 @@
 ---
 import { company } from '../data/company';
-
-// "INGREDIENTS" → "Ingredients" untuk tampilan footer
-const logoSubDisplay = company.brand.logoSub.charAt(0) + company.brand.logoSub.slice(1).toLowerCase();
 ---
 
 <footer class="footer">
   <div class="container footer-grid">
     <div class="footer-col address-col">
       <div class="footer-logo">
-        {company.brand.logoMain}<strong>{logoSubDisplay}</strong>
+        {company.brand.logoMain} <strong>{company.brand.logoSub}</strong>
       </div>
       <p class="address-text">{company.address.office.street}</p>
     </div>
@@ -30,10 +27,8 @@ const logoSubDisplay = company.brand.logoSub.charAt(0) + company.brand.logoSub.s
     <div class="footer-col">
       <h4 data-lang-id="Hubungi Kami" data-lang-en="Contact Us">Hubungi Kami</h4>
       <ul class="footer-contact">
-        <li><strong>Telp:</strong> {company.contact.phoneDisplay}</li>
-        <li><strong>WA:</strong> {company.contact.whatsappDisplay}</li>
+        <li><strong>Telp/WA:</strong> {company.contact.whatsappDisplay}</li>
         <li><strong>Email:</strong> {company.contact.email}</li>
-        <li><strong>Web:</strong> {company.contact.website}</li>
       </ul>
     </div>
   </div>

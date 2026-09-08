@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1b4332"/>
+      <stop offset="100%" stop-color="#2d6a4f"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#52b788"/>
+      <stop offset="100%" stop-color="#2d6a4f"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="300" cy="225" r="120" fill="rgba(255,255,255,0.08)"/>
+  <circle cx="300" cy="225" r="85" fill="rgba(255,255,255,0.06)"/>
+  <g fill="url(#leaf)">
+    <path d="M300 180 Q255 120 300 60 Q345 120 300 180Z"/>
+    <path d="M300 270 Q345 330 300 390 Q255 330 300 270Z"/>
+    <path d="M210 225 Q150 180 90 225 Q150 270 210 225Z"/>
+    <path d="M390 225 Q450 270 510 225 Q450 180 390 225Z"/>
+  </g>
+  <rect x="294" y="185" width="12" height="80" rx="6" fill="#d9a441"/>
+  <text x="300" y="325" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff" letter-spacing="2">PRODUK ALAMI</text>
+  <text x="300" y="358" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="15" fill="rgba(255,255,255,0.85)" letter-spacing="0.5">Natural Raw Material</text>
+</svg>

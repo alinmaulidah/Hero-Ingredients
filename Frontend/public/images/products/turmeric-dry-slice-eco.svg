@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="450" viewBox="0 0 600 450">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdf6e3"/>
+      <stop offset="100%" stop-color="#f8ecd2"/>
+    </linearGradient>
+    <radialGradient id="slice" cx="0.4" cy="0.35" r="1">
+      <stop offset="0%" stop-color="#ffbe0b"/>
+      <stop offset="55%" stop-color="#fb8500"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+    <radialGradient id="slice2" cx="0.4" cy="0.35" r="1">
+      <stop offset="0%" stop-color="#ffd166"/>
+      <stop offset="60%" stop-color="#ff9f1c"/>
+      <stop offset="100%" stop-color="#ef7a00"/>
+    </radialGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#92400e" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+  <rect width="600" height="450" fill="url(#bg)"/>
+  <circle cx="90" cy="80" r="120" fill="#f6dfae" opacity="0.5"/>
+  <circle cx="520" cy="390" r="140" fill="#f6dfae" opacity="0.45"/>
+  <g filter="url(#shadow)">
+    <ellipse cx="230" cy="200" rx="100" ry="80" fill="url(#slice)" transform="rotate(-14 230 200)"/>
+    <ellipse cx="390" cy="240" rx="90" ry="70" fill="url(#slice2)" transform="rotate(8 390 240)"/>
+    <ellipse cx="310" cy="290" rx="80" ry="58" fill="url(#slice)" transform="rotate(-4 310 290)" opacity="0.9"/>
+  </g>
+  <g stroke="#dd6a00" stroke-width="6" fill="none" opacity="0.6" stroke-linecap="round">
+    <path d="M200 165 Q225 185 240 215"/>
+    <path d="M300 160 Q330 185 345 225"/>
+    <path d="M360 205 Q385 230 380 262"/>
+    <path d="M290 255 Q310 280 300 310"/>
+  </g>
+  <text x="300" y="375" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#92400e" letter-spacing="1">KUNYIT KERING</text>
+  <text x="300" y="401" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="14" fill="#b45309" letter-spacing="0.5">Turmeric Dry Slices</text>
+</svg>
