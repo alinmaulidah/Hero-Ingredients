@@ -10,7 +10,8 @@
     "seed:admin": "node scripts/seedAdmin.js",
     "seed:catalog": "node scripts/seedCatalog.js",
     "seed:sheet": "node scripts/seedSheetCatalog.js",
-    "simulate:payment": "node scripts/simulatePayment.js"
+    "simulate:payment": "node scripts/simulatePayment.js",
+    "test:telegram": "node scripts/testTelegram.js"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +22,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "google-auth-library": "^11.0.2",
+    "install": "^0.13.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.3.0",
     "mysql2": "^3.24.1"
   },
   "devDependencies": {

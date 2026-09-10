@@ -1,0 +1,507 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const GOOGLE_CLIENT_ID = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID;
+---
+
+<Layout title="Masuk / Daftar - ">
+
+  <!-- Redirect cepat bila sudah login -->
+  <script is:inline>
+    (function () {
+      try {
+        if (localStorage.getItem('hero_customer_token')) {
+          var next = new URLSearchParams(window.location.search).get('next') || '/products';
+          window.location.replace(next);
+        }
+      } catch (e) { /* abaikan */ }
+    })();
+  </script>
+
+  {GOOGLE_CLIENT_ID && <script src="https://accounts.google.com/gsi/client"></script>}
+
+  <main class="auth-page">
+    <div class="container auth-container">
+
+      <div class="auth-card">
+
+        <div class="auth-head">
+          <h1>Masuk / Daftar</h1>
+          <p id="auth-hint" class="auth-hint">
+            Silakan masuk untuk melanjutkan pembayaran.
+          </p>
+        </div>
+
+        {GOOGLE_CLIENT_ID && (
+          <div class="google-block">
+            <div id="google-button"></div>
+            <div class="google-divider"><span>atau gunakan email</span></div>
+          </div>
+        )}
+
+        <!-- TAB -->
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" id="tab-login" data-tab="login">
+            Masuk
+          </button>
+          <button type="button" class="auth-tab" id="tab-register" data-tab="register">
+            Daftar
+          </button>
+        </div>
+
+        <div id="auth-error" class="auth-error" hidden></div>
+
+        <!-- FORM MASUK -->
+        <form id="form-login" class="auth-form" novalidate>
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" class="input" placeholder="nama@perusahaan.com" autocomplete="email" />
+          </div>
+
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="login-submit">
+            Masuk
+          </button>
+        </form>
+
+        <!-- FORM DAFTAR -->
+        <form id="form-register" class="auth-form" hidden novalidate>
+          <div class="field">
+            <label for="reg-name">Nama Lengkap</label>
+            <input id="reg-name" type="text" class="input" placeholder="mis. Andi Wijaya" autocomplete="name" />
+          </div>
+
+          <div class="field">
+            <label for="reg-email">Email</label>
+            <input id="reg-email" type="email" class="input" placeholder="nama@perusahaan.com" autocomplete="email" />
+          </div>
+
+          <div class="field">
+            <label for="reg-phone">No. HP <span class="muted">(opsional)</span></label>
+            <input id="reg-phone" type="tel" class="input" placeholder="08xxxxxxxxxx" autocomplete="tel" />
+          </div>
+
+          <div class="field">
+            <label for="reg-password">Password</label>
+            <input id="reg-password" type="password" class="input" placeholder="Minimal 6 karakter" autocomplete="new-password" />
+          </div>
+
+          <div class="field">
+            <label for="reg-password2">Ulangi Password</label>
+            <input id="reg-password2" type="password" class="input" placeholder="Ulangi password" autocomplete="new-password" />
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" id="register-submit">
+            Daftar & Lanjutkan
+          </button>
+        </form>
+
+        <div class="auth-back">
+          <a href="/products">&larr; Lanjut Belanja</a>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <style>
+    .auth-page {
+      min-height: calc(100vh - 68px - 320px);
+      padding: 48px 0 64px;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    }
+
+    .auth-container {
+      max-width: 480px;
+    }
+
+    .auth-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 32px 28px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    .auth-head {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .auth-head h1 {
+      font-size: 24px;
+      color: var(--primary-dark);
+      margin: 0 0 6px;
+    }
+
+    .auth-hint {
+      color: #64748b;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    /* Blok "Masuk dengan Google" */
+    .google-block {
+      margin-bottom: 20px;
+    }
+
+    #google-button {
+      display: flex;
+      justify-content: center;
+      min-height: 44px;
+    }
+
+    .google-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+      color: #94a3b8;
+      font-size: 12px;
+    }
+
+    .google-divider::before,
+    .google-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: #f1f5f9;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .auth-tab {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 11px;
+      border-radius: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      color: #475569;
+      cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .auth-tab:hover:not(.active) {
+      color: var(--primary);
+    }
+
+    .auth-tab.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
+    }
+
+    /* Perpindahan tab yang halus: form masuk perlahan dari bawah + memudar. */
+    .auth-form:not([hidden]) {
+      animation: form-in 0.28s ease;
+    }
+
+    @keyframes form-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    /* Form yang disembunyikan (atribut hidden) tidak boleh tertimpa display:flex di atas. */
+    .auth-form[hidden] {
+      display: none;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .input {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(6, 95, 70, 0.12);
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .auth-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #b91c1c;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .auth-back {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .auth-back a {
+      color: var(--primary);
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .auth-back a:hover {
+      text-decoration: underline;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+
+    @media (max-width: 640px) {
+      .auth-page {
+        padding: 24px 16px 40px;
+      }
+
+      .auth-card {
+        padding: 24px 18px;
+      }
+    }
+  </style>
+</Layout>
+
+<script>
+  import { isLoggedIn, loginCustomer, loginWithGoogle, register, saveAuth } from '../lib/customer/api';
+
+  // Sudah ditangani script is:inline di atas; jaga-jaga untuk yang token-nya
+  // baru disimpan di tab lain.
+  if (isLoggedIn()) {
+    const next = new URLSearchParams(window.location.search).get('next') || '/products';
+    window.location.replace(next);
+  }
+
+  // Kalau datang dari tombol bayar, next=checkout; dari navbar cukup kembali ke katalog.
+  const nextParam = new URLSearchParams(window.location.search).get('next') || '/products';
+  const hintEl = document.getElementById('auth-hint');
+  if (nextParam.includes('checkout') && hintEl) {
+    hintEl.textContent = 'Belum punya akun? Daftar dulu, atau masuk untuk melanjutkan pembayaran.';
+  }
+
+  const errorEl = document.getElementById('auth-error');
+  function showError(message: string | null): void {
+    if (!errorEl) return;
+    if (message) {
+      errorEl.textContent = message;
+      errorEl.hidden = false;
+    } else {
+      errorEl.hidden = true;
+      errorEl.textContent = '';
+    }
+  }
+
+  function setBusy(button: HTMLButtonElement, busy: boolean, label: string): void {
+    button.disabled = busy;
+    button.textContent = busy ? 'Memproses...' : label;
+  }
+
+  function switchTab(tab: 'login' | 'register'): void {
+    document.getElementById('tab-login')?.classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register')?.classList.toggle('active', tab === 'register');
+    const loginForm = document.getElementById('form-login');
+    const registerForm = document.getElementById('form-register');
+    if (loginForm) loginForm.hidden = tab !== 'login';
+    if (registerForm) registerForm.hidden = tab !== 'register';
+    showError(null);
+
+    // Fokus otomatis ke field pertama agar tidak perlu klik dua kali.
+    const firstInput = document.querySelector<HTMLInputElement>(
+      tab === 'login' ? '#form-login input' : '#form-register input'
+    );
+    if (firstInput) firstInput.focus();
+  }
+
+  document.getElementById('tab-login')?.addEventListener('click', () => switchTab('login'));
+  document.getElementById('tab-register')?.addEventListener('click', () => switchTab('register'));
+
+  function redirectAfterAuth(): void {
+    // next=/checkout bila datang dari tombol bayar; selain itu kembali ke katalog.
+    window.location.replace(nextParam || '/products');
+  }
+
+  /* =========================================
+     MASUK DENGAN GOOGLE (Identity Services)
+  ========================================== */
+
+  const googleClientId = import.meta.env.PUBLIC_GOOGLE_CLIENT_ID || '';
+  if (googleClientId) {
+    const handleGoogleCredential = async (response: { credential?: string }) => {
+      const idToken = response && response.credential;
+      const buttonWrap = document.getElementById('google-button');
+      if (buttonWrap) buttonWrap.style.opacity = '0.6';
+
+      if (!idToken) {
+        showError('Gagal mendapat kredensial Google. Silakan coba lagi.');
+        if (buttonWrap) buttonWrap.style.opacity = '1';
+        return;
+      }
+
+      showError(null);
+      try {
+        const result = await loginWithGoogle(idToken);
+        saveAuth(result.token, result.user);
+        redirectAfterAuth();
+      } catch (err) {
+        showError(err instanceof Error ? err.message : 'Gagal masuk dengan Google.');
+        if (buttonWrap) buttonWrap.style.opacity = '1';
+      }
+    };
+
+    const win = window as any;
+    win.__heroGoogleCallback = handleGoogleCredential;
+
+    const renderGoogleButton = (): void => {
+      const box = document.getElementById('google-button');
+      if (!box) return;
+
+      if (win.google && win.google.accounts && win.google.accounts.id) {
+        win.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: handleGoogleCredential,
+          ux_mode: 'popup',
+          auto_select: false
+        });
+        win.google.accounts.id.renderButton(box, {
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          width: 320
+        });
+      } else {
+        // SDK Google belum siap — coba lagi sebentar.
+        window.setTimeout(renderGoogleButton, 250);
+      }
+    };
+
+    renderGoogleButton();
+  }
+
+  document.getElementById('form-login')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = (document.getElementById('login-email') as HTMLInputElement).value.trim();
+    const password = (document.getElementById('login-password') as HTMLInputElement).value;
+    const submitBtn = document.getElementById('login-submit') as HTMLButtonElement;
+
+    showError(null);
+    if (!email || !password) {
+      showError('Email dan password wajib diisi.');
+      return;
+    }
+
+    setBusy(submitBtn, true, 'Masuk');
+    try {
+      const result = await loginCustomer(email, password);
+      saveAuth(result.token, result.user);
+      redirectAfterAuth();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Gagal masuk. Silakan coba lagi.');
+      setBusy(submitBtn, false, 'Masuk');
+    }
+  });
+
+  document.getElementById('form-register')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = (document.getElementById('reg-name') as HTMLInputElement).value.trim();
+    const email = (document.getElementById('reg-email') as HTMLInputElement).value.trim();
+    const phone = (document.getElementById('reg-phone') as HTMLInputElement).value.trim();
+    const password = (document.getElementById('reg-password') as HTMLInputElement).value;
+    const password2 = (document.getElementById('reg-password2') as HTMLInputElement).value;
+    const submitBtn = document.getElementById('register-submit') as HTMLButtonElement;
+
+    showError(null);
+    if (!name || !email) {
+      showError('Nama dan email wajib diisi.');
+      return;
+    }
+    if (password.length < 6) {
+      showError('Password minimal 6 karakter.');
+      return;
+    }
+    if (password !== password2) {
+      showError('Ulangi password tidak sama.');
+      return;
+    }
+
+    setBusy(submitBtn, true, 'Daftar & Lanjutkan');
+    try {
+      const result = await register({ name, email, phone, password });
+      saveAuth(result.token, result.user);
+      redirectAfterAuth();
+    } catch (err) {
+      showError(err instanceof Error ? err.message : 'Gagal membuat akun. Silakan coba lagi.');
+      setBusy(submitBtn, false, 'Daftar & Lanjutkan');
+    }
+  });
+</script>

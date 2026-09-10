@@ -9,8 +9,10 @@ const isProduction = () => {
   return getServerKey().startsWith('Mid-server-');
 };
 
-const snapTransactionsUrl = () =>
-  `${isProduction() ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com'}/snap/v1/transactions`;
+const midtransApiBase = () =>
+  isProduction() ? 'https://api.midtrans.com' : 'https://api.sandbox.midtrans.com';
+
+const snapTransactionsUrl = () => `${midtransApiBase()}/snap/v1/transactions`;
 
 const basicAuthHeader = () =>
   'Basic ' + Buffer.from(`${getServerKey()}:`).toString('base64');
@@ -67,6 +69,45 @@ const createSnapTransaction = async ({ orderId, grossAmount, items }) => {
 };
 
 /**
+ * Ambil status transaksi langsung dari Midtrans (GET /v2/{order_id}/status).
+ * Dipakai sebagai jaring pengaman bila webhook tidak sampai ke server
+ * (mis. saat pengembangan lokal tanpa URL publik). Melempar Error bila gagal;
+ * error.status = 404 berarti transaksi belum/tidak ada di Midtrans.
+ */
+const getTransactionStatus = async (orderId) => {
+  const serverKey = getServerKey();
+  if (!serverKey) {
+    const error = new Error('MIDTRANS_SERVER_KEY belum diisi di Backend/.env');
+    error.code = 'MIDTRANS_CONFIG';
+    throw error;
+  }
+
+  const response = await fetch(
+    `${midtransApiBase()}/v2/${encodeURIComponent(orderId)}/status`,
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: basicAuthHeader()
+      }
+    }
+  );
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const error = new Error(
+      data?.status_message || `Midtrans status error (${response.status})`
+    );
+    error.code = 'MIDTRANS_API';
+    error.status = response.status;
+    error.details = data;
+    throw error;
+  }
+
+  return data;
+};
+
+/**
  * Verifikasi signature webhook Midtrans:
  * sha512(order_id + status_code + gross_amount + server_key)
  */
@@ -88,5 +129,6 @@ const verifySignature = ({ orderId, statusCode, grossAmount, signatureKey }) => 
 module.exports = {
   isProduction,
   createSnapTransaction,
+  getTransactionStatus,
   verifySignature
 };

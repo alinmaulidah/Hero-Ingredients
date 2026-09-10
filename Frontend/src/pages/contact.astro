@@ -7,14 +7,6 @@ const { contact, address, hours, brand } = company;
 
 <Layout title={`Hubungi Kami - ${brand.siteName}`}>
   <main class="contact-page">
-    <!-- HERO HEADER -->
-    <section class="contact-hero">
-      <div class="container">
-        <h1 data-lang-id="Hubungi Kami" data-lang-en="Contact Us">Hubungi Kami</h1>
-        <p data-lang-id="Mari berdiskusi mengenai kebutuhan bahan baku alam, kerja sama pasokan, atau konsultasi produk untuk bisnis Anda." data-lang-en="Let's discuss your natural raw material needs, supply partnerships, or product consultation for your business.">Mari berdiskusi mengenai kebutuhan bahan baku alam, kerja sama pasokan, atau konsultasi produk untuk bisnis Anda.</p>
-      </div>
-    </section>
-
     <!-- MAIN CONTENT SECTION -->
     <section class="contact-section">
       <div class="container contact-grid">
@@ -123,8 +115,11 @@ const { contact, address, hours, brand } = company;
               <textarea id="pesan" rows="4" data-lang-id="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." data-lang-en="Describe the type of raw material, estimated quantity, or specifications you need..." placeholder="Jelaskan jenis bahan baku, perkiraan kuantitas, atau spesifikasi yang Anda butuhkan..." required></textarea>
             </div>
 
-            <button type="submit" class="btn-submit" data-lang-id="Kirim Pesan Sekarang" data-lang-en="Send Message Now">Kirim Pesan Sekarang</button>
+            <button type="submit" class="btn-submit" id="contact-submit-btn" data-lang-id="Kirim Pesan Sekarang" data-lang-en="Send Message Now">Kirim Pesan Sekarang</button>
           </form>
+
+          <!-- Status kirim (success/error) -->
+          <p id="form-status" class="form-status" hidden></p>
         </div>
 
       </div>
@@ -137,29 +132,6 @@ const { contact, address, hours, brand } = company;
     background-color: var(--bg-light);
     min-height: 80vh;
     font-family: var(--font-sans);
-  }
-
-  /* HERO HEADER */
-  .contact-hero {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
-    color: var(--white);
-    padding: 4rem 0 3.5rem 0;
-    text-align: center;
-  }
-
-  .contact-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    letter-spacing: -0.5px;
-  }
-
-  .contact-hero p {
-    font-size: 1.05rem;
-    max-width: 650px;
-    margin: 0 auto;
-    opacity: 0.9;
-    line-height: 1.6;
   }
 
   /* SECTION & GRID */
@@ -351,6 +323,33 @@ const { contact, address, hours, brand } = company;
     transform: scale(0.99);
   }
 
+  .btn-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  /* Status pengiriman form */
+  .form-status {
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .form-status.form-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+  }
+
+  .form-status.form-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+  }
+
   /* RESPONSIVE */
   @media (max-width: 900px) {
     .contact-grid {
@@ -358,12 +357,73 @@ const { contact, address, hours, brand } = company;
       gap: 2.5rem;
     }
 
-    .contact-hero h1 {
-      font-size: 2rem;
-    }
-
     .contact-form-card {
       padding: 1.75rem;
     }
   }
 </style>
+
+<script>
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
+
+  const form = document.querySelector<HTMLFormElement>('.contact-form');
+  const statusEl = document.getElementById('form-status');
+  const submitBtn = document.getElementById('contact-submit-btn') as HTMLButtonElement | null;
+
+  function showStatus(message: string, type: 'form-success' | 'form-error'): void {
+    if (!statusEl) return;
+    statusEl.textContent = message;
+    statusEl.className = `form-status ${type}`;
+    statusEl.hidden = false;
+    statusEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (statusEl) statusEl.hidden = true;
+
+    const payload = {
+      name: (document.getElementById('nama') as HTMLInputElement).value.trim(),
+      email: (document.getElementById('email') as HTMLInputElement).value.trim(),
+      phone: (document.getElementById('telepon') as HTMLInputElement).value.trim(),
+      market: (document.getElementById('market') as HTMLSelectElement).value,
+      message: (document.getElementById('pesan') as HTMLTextAreaElement).value.trim()
+    };
+
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Mengirim...';
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (res.ok && data?.success) {
+        showStatus(
+          'Terima kasih! Pesan Anda sudah kami terima dan akan segera direspons.',
+          'form-success'
+        );
+        form.reset();
+      } else {
+        showStatus(
+          (data && data.message) || 'Gagal mengirim pesan. Silakan coba lagi.',
+          'form-error'
+        );
+      }
+    } catch (err) {
+      console.error('Contact form error:', err);
+      showStatus('Terjadi kesalahan koneksi. Silakan coba lagi.', 'form-error');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kirim Pesan Sekarang';
+      }
+    }
+  });
+</script>

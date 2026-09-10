@@ -4,13 +4,6 @@ import { productGroups } from '../data/products';
 import { buildCategoryPillsHtml, buildGridHtml } from '../lib/catalogHtml';
 import { catalogCategoriesFor, fromStaticData, type CatalogGroup } from '../lib/catalogData';
 
-const CLIENT_KEY = import.meta.env.PUBLIC_MIDTRANS_CLIENT_KEY;
-
-// Mode Snap: env var override lebih dulu; kalau kosong, ditebak dari prefix key.
-// (Key Mid-... bisa saja milik akun sandbox — jangan andalkan prefix saja.)
-const envProdFlag = String(import.meta.env.PUBLIC_MIDTRANS_IS_PRODUCTION ?? '').toLowerCase();
-const isMidtransProduction = envProdFlag === '' ? CLIENT_KEY.startsWith('Mid-client-') : envProdFlag === 'true';
-
 /**
  * Fallback statis dipakai untuk HTML awal (SSR) dan bila API tidak
  * terjangkau. Saat halaman dibuka, script client akan mengambil data
@@ -21,14 +14,6 @@ const fallbackCategories = catalogCategoriesFor(fallbackGroups);
 ---
 
 <Layout title="Katalog Produk - " stylesheet="/styles/products.css">
-
-  <!-- Midtrans Snap SDK -->
-  <script
-    src={isMidtransProduction
-      ? 'https://app.midtrans.com/snap/snap.js'
-      : 'https://app.sandbox.midtrans.com/snap/snap.js'}
-    data-client-key={CLIENT_KEY}
-  ></script>
 
   <main class="products-page">
 
@@ -235,6 +220,14 @@ const fallbackCategories = catalogCategoriesFor(fallbackGroups);
     type CatalogGroup,
     type CatalogOption
   } from '../lib/catalogData';
+  import {
+    isLoggedIn,
+    loadCart,
+    loadCartCurrency,
+    saveCart,
+    saveCartCurrency,
+    type CartItem
+  } from '../lib/customer/api';
 
   const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
 
@@ -242,23 +235,13 @@ const fallbackCategories = catalogCategoriesFor(fallbackGroups);
      STATE
   ========================================== */
 
-  interface CartItem {
-    cartItemId: string;
-    name: string;
-    optionName: string;
-    spec: string;
-    category: string;
-    grade: string;
-    size: string;
-    imageUrl: string;
-    prices: Record<string, number>;
-    qty: number;
-  }
-
   /** Data aktif — fallback statis dulu, diganti data live bila API berhasil. */
   let groups: CatalogGroup[] = fromStaticData(productGroups);
-  let cart: CartItem[] = [];
-  let currentCurrency = 'IDR';
+
+  // Keranjang & mata uang disimpan di localStorage supaya tidak hilang saat
+  // pindah ke halaman login/checkout maupun saat halaman di-reload.
+  let cart: CartItem[] = loadCart();
+  let currentCurrency = loadCartCurrency();
   let selectedCategory = 'All';
   let categories = catalogCategoriesFor(groups);
   /** pilihan aktif per kartu: { [groupId]: { optionId, variantIndex } } */
@@ -633,6 +616,10 @@ ${pills}
   }
 
   function updateCartUI() {
+    // Simpan setiap perubahan ke localStorage (keranjang & mata uang).
+    saveCart(cart);
+    saveCartCurrency(currentCurrency);
+
     const cartCountEl = document.getElementById('cart-count');
     const cartHeaderCountEl = document.getElementById('cart-header-count');
     const cartItemsEl = document.getElementById('cart-items');
@@ -764,88 +751,34 @@ ${pills}
   };
 
   /* =========================================
-     MIDTRANS CHECKOUT
+     CHECKOUT GATE (login dulu, lalu /checkout)
   ========================================== */
 
-  document.getElementById('pay-button')?.addEventListener('click', async () => {
+  document.getElementById('pay-button')?.addEventListener('click', () => {
     if (cart.length === 0) {
       alert('Keranjang belanja Anda kosong!');
       return;
     }
 
-    const grandTotal = cart.reduce(
-      (sum, item) => sum + (item.prices[currentCurrency] || 0) * item.qty,
-      0
-    );
-
-    if (currentCurrency === 'IDR' && grandTotal < 10000) {
-      alert('Minimal transaksi pembayaran via Midtrans adalah Rp 10.000');
-      return;
-    }
-
-    const orderPayload = {
-      currency: currentCurrency,
-      items: cart.map((item) => ({
-        id: item.cartItemId,
-        price: Math.round(item.prices[currentCurrency] || 0),
-        quantity: item.qty,
-        name: `${item.name} ${item.optionName || item.spec || ''} (${item.size})`
-          .replace(/\s+/g, ' ')
-          .trim()
-          .substring(0, 50)
-      }))
-    };
-
-    const payButton = document.getElementById('pay-button') as HTMLButtonElement | null;
-    if (payButton) {
-      payButton.textContent = 'Memproses Pembayaran...';
-      payButton.disabled = true;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/api/charge`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload)
-      });
-
-      const data = await res.json();
-      const token =
-        data && data.success ? data.data && data.data.token : data && data.token;
-
-      if (token) {
-        // @ts-ignore — window.snap disediakan oleh SDK Midtrans
-        window.snap.pay(token, {
-          onSuccess: () => {
-            alert('Pembayaran Berhasil!');
-            cart = [];
-            updateCartUI();
-            closeCart();
-          },
-          onPending: () => {
-            alert('Selesaikan pembayaran Anda di popup yang muncul.');
-          },
-          onError: () => {
-            alert('Gagal memproses pembayaran!');
-          },
-          onClose: () => {
-            alert('Anda menutup jendela pembayaran.');
-          }
-        });
-      } else {
-        alert((data && data.message) || 'Gagal mendapatkan token transaksi. Silakan coba lagi.');
-        console.error('API Response Error:', data);
-      }
-    } catch (err) {
-      console.error('Network/System Error:', err);
-      alert('Terjadi kesalahan koneksi ke server.');
-    } finally {
-      if (payButton) {
-        payButton.textContent = 'Bayar Langsung Sekarang';
-        payButton.disabled = false;
-      }
+    // Keranjang sudah tersimpan oleh updateCartUI di setiap perubahan.
+    if (isLoggedIn()) {
+      window.location.replace('/checkout');
+    } else {
+      // Belum punya akun / belum masuk: login dulu, kembali ke /checkout.
+      window.location.replace('/login?next=/checkout');
     }
   });
+
+  /* =========================================
+     PULIHKAN SESI KERANJANG SAAT HALAMAN DIBUKA
+  ========================================== */
+
+  const currencySelectEl = document.getElementById('currency-select') as HTMLSelectElement | null;
+  if (currencySelectEl) {
+    currencySelectEl.value = currentCurrency;
+  }
+  updateAllCardPrices();
+  updateCartUI();
 
   /* =========================================
      SINKRONISASI KATALOG DARI BACKEND

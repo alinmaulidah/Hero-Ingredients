@@ -4,7 +4,7 @@ import '../styles/admin.css';
 
 interface Props {
   title?: string;
-  active?: 'dashboard' | 'products' | 'orders';
+  active?: 'dashboard' | 'products' | 'orders' | 'vouchers' | 'shipping' | 'messages';
 }
 
 const { title = 'Dashboard', active } = Astro.props;
@@ -51,6 +51,9 @@ const { title = 'Dashboard', active } = Astro.props;
           <a href="/admin/" class={active === 'dashboard' ? 'active' : ''}>Dashboard</a>
           <a href="/admin/products/" class={active === 'products' ? 'active' : ''}>Produk</a>
           <a href="/admin/orders/" class={active === 'orders' ? 'active' : ''}>Pesanan</a>
+          <a href="/admin/messages/" class={active === 'messages' ? 'active' : ''}>Pesan</a>
+          <a href="/admin/vouchers/" class={active === 'vouchers' ? 'active' : ''}>Voucher</a>
+          <a href="/admin/shipping/" class={active === 'shipping' ? 'active' : ''}>Pengiriman</a>
           <a href="/" class="nav-home">← Lihat Website</a>
         </nav>
       </aside>

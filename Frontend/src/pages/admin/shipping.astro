@@ -1,0 +1,244 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pengiriman" active="shipping">
+
+  <div class="page-head">
+    <div>
+      <h1>Kurir & Ongkir</h1>
+      <div class="subtitle">
+        Opsi kurir dengan tarif tetap yang dipilih pelanggan saat checkout.
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-add-shipping">+ Tambah Kurir</button>
+  </div>
+
+  <div id="flash"></div>
+
+  <!-- Editor kurir -->
+  <div class="card" id="shipping-editor" hidden>
+    <div class="card-title" id="editor-title">Kurir Baru</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="f-name">Nama Kurir</label>
+        <input id="f-name" class="input" placeholder="mis. JNE Reguler" maxlength="100" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-description">Deskripsi / Estimasi <span class="muted">— opsional</span></label>
+        <input id="f-description" class="input" placeholder="mis. Estimasi 2-4 hari kerja" maxlength="255" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-price">Ongkir (Rp)</label>
+        <input id="f-price" type="number" class="input" min="0" step="1000" placeholder="mis. 15000" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-sort">Urutan <span class="muted">— opsional</span></label>
+        <input id="f-sort" type="number" class="input" min="0" placeholder="0 = tampil paling atas" />
+      </div>
+
+      <div class="form-row">
+        <label class="check-label">
+          <input id="f-active" type="checkbox" checked />
+          Aktif (tampil di checkout)
+        </label>
+      </div>
+    </div>
+
+    <div class="editor-actions">
+      <button type="button" class="btn" id="cancel-editor">Batal</button>
+      <button type="button" class="btn btn-primary" id="save-shipping">Simpan Kurir</button>
+    </div>
+  </div>
+
+  <div id="shipping-container">
+    <div class="loading">Memuat kurir…</div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  import { escapeHtml } from '../../lib/catalogHtml';
+  import {
+    createShippingOption,
+    updateShippingOption,
+    deleteShippingOption,
+    fetchAllShippingOptions,
+    type ShippingOptionDto
+  } from '../../lib/admin/api';
+
+  const container = document.getElementById('shipping-container');
+  const flashEl = document.getElementById('flash');
+  const editor = document.getElementById('shipping-editor');
+  const editorTitle = document.getElementById('editor-title');
+
+  let options: ShippingOptionDto[] = [];
+  let editingId: number | null = null;
+
+  function formatIDR(value: number): string {
+    return `Rp ${(Number(value) || 0).toLocaleString('id-ID')}`;
+  }
+
+  function flash(message: string, type: 'error' | 'success'): void {
+    if (!flashEl) return;
+    flashEl.innerHTML = `<div class="alert alert-${type}">${escapeHtml(message)}</div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderShippingCard(option: ShippingOptionDto): string {
+    return `
+      <div class="shipping-card card" data-id="${option.id}">
+        <div class="option-head">
+          <h4>${escapeHtml(option.name)}
+            ${option.isActive ? '<span class="chip chip-green">Aktif</span>' : '<span class="chip">Nonaktif</span>'}
+          </h4>
+          <div class="option-actions">
+            <button type="button" class="btn btn-sm" data-action="edit" data-id="${option.id}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${option.id}">Hapus</button>
+          </div>
+        </div>
+
+        <div class="option-tags">
+          <span class="chip">${formatIDR(option.priceIdr)}</span>
+          ${option.description ? `<span class="chip">${escapeHtml(option.description)}</span>` : ''}
+          <span class="chip">Urutan ${option.sortOrder}</span>
+        </div>
+      </div>`;
+  }
+
+  async function loadShipping(): Promise<void> {
+    try {
+      options = await fetchAllShippingOptions();
+      if (!container) return;
+
+      if (options.length === 0) {
+        container.innerHTML =
+          '<div class="card"><div class="empty-state">Belum ada kurir. Klik <strong>+ Tambah Kurir</strong> untuk menambahkan opsi pengiriman.</div></div>';
+        return;
+      }
+
+      container.innerHTML = options.map(renderShippingCard).join('');
+    } catch (error) {
+      if (container) {
+        container.innerHTML = `<div class="alert alert-error">${
+          error instanceof Error ? escapeHtml(error.message) : 'Gagal memuat kurir.'
+        }</div>`;
+      }
+    }
+  }
+
+  /* ============ EDITOR ============ */
+
+  function openEditor(option: ShippingOptionDto | null): void {
+    editingId = option ? option.id : null;
+    if (!editor || !editorTitle) return;
+
+    editorTitle.textContent = option ? `Ubah Kurir ${option.name}` : 'Kurir Baru';
+    editor.hidden = false;
+
+    (document.getElementById('f-name') as HTMLInputElement).value = option?.name || '';
+    (document.getElementById('f-description') as HTMLInputElement).value = option?.description || '';
+    (document.getElementById('f-price') as HTMLInputElement).value =
+      option != null ? String(option.priceIdr) : '';
+    (document.getElementById('f-sort') as HTMLInputElement).value =
+      option != null ? String(option.sortOrder) : '0';
+    (document.getElementById('f-active') as HTMLInputElement).checked = option ? option.isActive : true;
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function closeEditor(): void {
+    editingId = null;
+    if (editor) editor.hidden = true;
+  }
+
+  document.getElementById('btn-add-shipping')?.addEventListener('click', () => openEditor(null));
+  document.getElementById('cancel-editor')?.addEventListener('click', closeEditor);
+
+  document.getElementById('save-shipping')?.addEventListener('click', async () => {
+    const name = (document.getElementById('f-name') as HTMLInputElement).value.trim();
+    const description = (document.getElementById('f-description') as HTMLInputElement).value.trim();
+    const priceIdr = Number((document.getElementById('f-price') as HTMLInputElement).value);
+    const sortOrder = Number((document.getElementById('f-sort') as HTMLInputElement).value || 0);
+    const isActive = (document.getElementById('f-active') as HTMLInputElement).checked;
+
+    if (!name) {
+      flash('Nama kurir wajib diisi.', 'error');
+      return;
+    }
+    if (!Number.isInteger(priceIdr) || priceIdr < 0) {
+      flash('Ongkir harus angka 0 atau lebih.', 'error');
+      return;
+    }
+
+    const payload = {
+      name,
+      description: description || null,
+      priceIdr,
+      isActive,
+      sortOrder: Number.isInteger(sortOrder) ? sortOrder : 0
+    };
+
+    const saveBtn = document.getElementById('save-shipping') as HTMLButtonElement | null;
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+    }
+
+    try {
+      if (editingId === null) {
+        await createShippingOption(payload);
+        flash('Kurir berhasil ditambahkan.', 'success');
+      } else {
+        await updateShippingOption(editingId, payload);
+        flash('Kurir berhasil diperbarui.', 'success');
+      }
+      closeEditor();
+      await loadShipping();
+    } catch (error) {
+      flash(error instanceof Error ? error.message : 'Gagal menyimpan kurir.', 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan Kurir';
+      }
+    }
+  });
+
+  /* ============ AKSI LIST ============ */
+
+  container?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-action]');
+    if (!btn) return;
+
+    const id = Number(btn.dataset.id);
+    const action = btn.dataset.action;
+    const option = options.find((o) => o.id === id);
+    if (!option) return;
+
+    if (action === 'edit') {
+      openEditor(option);
+    } else if (action === 'delete') {
+      if (!window.confirm(`Hapus kurir ${option.name}?`)) return;
+      try {
+        await deleteShippingOption(id);
+        flash('Kurir dihapus.', 'success');
+        await loadShipping();
+      } catch (error) {
+        flash(error instanceof Error ? error.message : 'Gagal menghapus kurir.', 'error');
+      }
+    }
+  });
+
+  loadShipping();
+</script>
+
+<style>
+  .shipping-card {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+</style>

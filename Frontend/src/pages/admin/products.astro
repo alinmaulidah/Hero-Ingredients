@@ -52,10 +52,13 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     updateVariant,
     deleteVariant,
     fetchProducts,
+    uploadProductImage,
+    resolveApiUrl,
     type ProductGroupDto,
     type ProductOptionDto,
     type ProductVariantDto
   } from '../../lib/admin/api';
+  import { priceFromIDR, type ForeignCurrency } from '../../lib/currency';
 
   const groupsContainer = document.getElementById('groups-container');
   const flashEl = document.getElementById('flash');
@@ -84,19 +87,35 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     return Number.isNaN(num) ? null : num;
   }
 
+  /**
+   * Produk baru tampil di storefront (/products) bila punya minimal satu
+   * jenis olahan yang sudah memiliki kemasan & harga (varian). Jenis tanpa
+   * varian dan grup tanpa jenis yang bisa dijual disembunyikan di storefront.
+   * @see Frontend/src/lib/catalogData.ts → normalizeCatalog
+   */
+  function isGroupSellable(group: ProductGroupDto): boolean {
+    return group.options.some((option) => option.variants.length > 0);
+  }
+
   /* =========================================
      RENDER LIST GRUP
   ========================================== */
 
   function renderGroupCard(group: ProductGroupDto): string {
+    const sellable = isGroupSellable(group);
     const optionsHtml = group.options.length
       ? group.options.map((option) => renderOptionBlock(group.id, option)).join('')
-      : `<div class="empty-state" style="padding:1rem;">Belum ada jenis olahan untuk produk ini.</div>`;
+      : `<div class="option-warning" style="margin:1rem 1.2rem 1.2rem;">⚠ Belum ada jenis olahan — produk ini belum tampil di storefront.</div>`;
 
     return `
       <div class="product-group" data-group-id="${group.id}">
         <div class="product-group-head">
           <h3>${escapeHtml(group.name)}</h3>
+          ${
+            sellable
+              ? '<span class="chip chip-green" title="Muncul di halaman /products">Tampil di storefront</span>'
+              : '<span class="chip chip-warn" title="Belum muncul di halaman /products">Belum tampil di storefront</span>'
+          }
           <span class="slug">/${escapeHtml(group.slug)}</span>
           <div class="product-group-actions">
             <button type="button" class="btn btn-sm" data-action="edit-group" data-group-id="${group.id}">Edit</button>
@@ -130,7 +149,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             return `<span class="chip">${escapeHtml(variant.size)} • ${formatIDR(firstPrice)}</span>`;
           })
           .join('')
-      : '<span class="muted">Belum ada kemasan/varian.</span>';
+      : '';
 
     return `
       <div class="option-block" data-option-id="${option.id}">
@@ -156,6 +175,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         '<div class="card"><div class="empty-state">Belum ada produk. Klik <strong>+ Tambah Produk</strong> untuk mulai.</div></div>';
       return;
     }
+
     groupsContainer.innerHTML = groups.map(renderGroupCard).join('');
   }
 
@@ -235,11 +255,17 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             <td><input class="input variant-price-input" data-add-price="AED" type="number" min="0" step="0.01" placeholder="10.00" /></td>
             <td><input class="input variant-price-input" data-add-price="EUR" type="number" min="0" step="0.01" placeholder="2.38" /></td>
             <td>
-              <button type="button" class="btn btn-sm" data-action="add-variant">+ Varian</button>
+              <button type="button" class="btn btn-sm btn-primary" data-action="add-variant">
+                + Tambah Kemasan &amp; Harga
+              </button>
             </td>
           </tr>
         </tfoot>
-      </table>`;
+      </table>
+      <div class="field-hint">
+        Cukup isi <strong>Harga IDR</strong> — harga USD, AED, dan EUR otomatis menyesuaikan.
+        Kamu masih bisa mengubahnya manual bila perlu.
+      </div>`;
   }
 
   function optionEditorHtml(groupId: number, option: ProductOptionDto | null): string {
@@ -249,8 +275,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
         ${variantRowsHtml(option)}`
       : `
         <div class="hint" style="margin-top:0.6rem;">
-          Setelah jenis tersimpan, klik <strong>Edit</strong> pada jenis tersebut
-          untuk menambahkan kemasan &amp; harga (IDR/USD/AED/EUR).
+          Setelah disimpan, form <strong>Kemasan &amp; Harga</strong> (IDR/USD/AED/EUR)
+          akan terbuka otomatis di bawah jenis ini.
         </div>`;
 
     return `
@@ -278,8 +304,25 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
             <input class="input" data-field="category" value="${option ? escapeHtml(option.category || '') : ''}" placeholder="mis. Dry Slices / Grind" />
           </div>
           <div class="form-row">
-            <label>URL Gambar</label>
-            <input class="input" data-field="imageUrl" value="${option ? escapeHtml(option.imageUrl || '') : ''}" placeholder="/images/products/….svg atau https://…" />
+            <label>Gambar Produk</label>
+            <input class="input" data-field="imageUrl" value="${option ? escapeHtml(option.imageUrl || '') : ''}" placeholder="Unggah file atau tempel URL gambar" />
+            <div class="upload-row">
+              <input type="file" accept="image/*" data-image-file hidden />
+              <button type="button" class="btn btn-sm" data-action="pick-image">Unggah Gambar</button>
+              <span class="field-hint" data-upload-status></span>
+            </div>
+            <div class="image-preview">
+              <img
+                data-image-preview
+                src="${
+                  option && option.imageUrl
+                    ? escapeHtml(resolveApiUrl(option.imageUrl))
+                    : '/images/products/placeholder.svg'
+                }"
+                alt="Pratinjau gambar"
+              />
+            </div>
+            <div class="hint">Setelah gambar terunggah, klik <strong>Simpan Jenis</strong> untuk menyimpannya.</div>
           </div>
         </div>
 
@@ -375,6 +418,60 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     return payload;
   }
 
+  /**
+   * Simpan baris "Kemasan & Harga" yang sudah diisi di tabel tetapi belum
+   * diklik "+ Tambah Kemasan & Harga". Dipanggil dari tombol "Simpan Jenis"
+   * agar input harga tidak ikut terbuang saat user menekan tombol itu.
+   */
+  async function savePendingVariant(panel: HTMLElement, groupId: number, optionId: number): Promise<boolean> {
+    const row = panel.querySelector<HTMLElement>('tfoot tr');
+    if (!row) return false;
+
+    const sizeInput = row.querySelector<HTMLInputElement>('[data-add-vsize]');
+    if (!sizeInput || !sizeInput.value.trim()) return false;
+
+    const payload = readVariantFromRow(row, 'add');
+    if (!payload) return false;
+
+    await createVariant(groupId, optionId, payload as never);
+    return true;
+  }
+
+  /**
+   * Saat Harga IDR diisi, hitung otomatis USD/AED/EUR pada baris yang sama
+   * memakai kurs tetap (lib/currency.ts). Berlaku untuk baris varian baru
+   * maupun yang sedang diedit.
+   */
+  const FOREIGN_CURRENCIES: ForeignCurrency[] = ['USD', 'AED', 'EUR'];
+
+  function syncConvertedPrices(row: HTMLElement, prefix: 'add' | 'edit'): void {
+    const selector = (name: string): string =>
+      prefix === 'add' ? `[data-add-price="${name}"]` : `[data-price="${name}"]`;
+
+    const idrInput = row.querySelector<HTMLInputElement>(selector('IDR'));
+    if (!idrInput) return;
+
+    const idr = Number(idrInput.value);
+    for (const currency of FOREIGN_CURRENCIES) {
+      const field = row.querySelector<HTMLInputElement>(selector(currency));
+      if (field) {
+        field.value = idr > 0 ? String(priceFromIDR(idr, currency)) : '';
+      }
+    }
+  }
+
+  groupsContainer?.addEventListener('input', (e) => {
+    const input = e.target as HTMLInputElement | null;
+    if (!input) return;
+
+    const currency = input.dataset.price || input.dataset.addPrice;
+    if (currency !== 'IDR') return;
+
+    const row = input.closest<HTMLElement>('tr');
+    if (!row) return;
+    syncConvertedPrices(row, input.dataset.addPrice ? 'add' : 'edit');
+  });
+
   groupsContainer?.addEventListener('click', async (e) => {
     const target = e.target as HTMLElement | null;
     const btn = target?.closest<HTMLElement>('[data-action]');
@@ -450,17 +547,33 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
           if (!gid) throw new Error('Produk tidak ditemukan.');
           if (oid) {
             await updateOption(gid, oid, fields);
-            flash('Jenis olahan berhasil diperbarui.', 'success');
+            const savedVariant = await savePendingVariant(panel, gid, oid);
+            flash(
+              savedVariant
+                ? 'Jenis olahan & kemasan/harga berhasil disimpan.'
+                : 'Jenis olahan berhasil diperbarui.',
+              'success'
+            );
+            await reloadGroups();
           } else {
-            await createOption(gid, fields);
-            flash('Jenis olahan berhasil ditambahkan.', 'success');
+            const created = await createOption(gid, fields);
+            flash('Jenis olahan ditambahkan. Sekarang isi kemasan & harga di bawah ini.', 'success');
+            await reloadGroups();
+            // Langsung buka form kemasan & harga pada jenis yang baru dibuat,
+            // supaya tidak perlu klik "Edit" manual lagi.
+            openOptionEditor(gid, created.id);
           }
-          await reloadGroups();
           break;
         }
         case 'cancel-option': {
           const panel = btn.closest<HTMLElement>('[data-option-editor]');
           if (panel) panel.innerHTML = '';
+          break;
+        }
+        case 'pick-image': {
+          const panel = btn.closest<HTMLElement>('[data-option-editor]');
+          const fileInput = panel?.querySelector<HTMLInputElement>('[data-image-file]');
+          fileInput?.click();
           break;
         }
         case 'delete-option': {
@@ -509,6 +622,35 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
   });
 
+  /* ---------- Unggah gambar produk (field URL Gambar) ---------- */
+  groupsContainer?.addEventListener('change', async (e) => {
+    const input = e.target as HTMLInputElement | null;
+    if (!input || !input.matches('[data-image-file]')) return;
+
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const panel = input.closest<HTMLElement>('[data-option-editor]');
+    const urlInput = panel?.querySelector<HTMLInputElement>('[data-field="imageUrl"]');
+    const status = panel?.querySelector<HTMLElement>('[data-upload-status]');
+    const preview = panel?.querySelector<HTMLImageElement>('[data-image-preview]');
+
+    if (status) status.textContent = 'Mengunggah…';
+
+    try {
+      const { url } = await uploadProductImage(file);
+      const fullUrl = resolveApiUrl(url);
+      if (urlInput) urlInput.value = fullUrl;
+      if (preview) preview.src = fullUrl;
+      if (status) status.textContent = 'Gambar terunggah.';
+    } catch (error) {
+      if (status) status.textContent = '';
+      flash(error instanceof Error ? error.message : 'Gagal mengunggah gambar.', 'error');
+    } finally {
+      input.value = '';
+    }
+  });
+
   /* ---------- Tambah produk baru ---------- */
   document.getElementById('btn-add-group')?.addEventListener('click', () => {
     if (!addGroupPanel) return;
@@ -541,7 +683,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       await createGroup({ name: input.value.trim() });
       input.value = '';
       addGroupPanel.hidden = true;
-      flash('Produk baru berhasil dibuat. Sekarang tambahkan jenis olahan & variannya.', 'success');
+      flash(
+        'Produk baru dibuat, tapi belum tampil di storefront. Tambahkan jenis olahan beserta kemasan & harga agar muncul di halaman /products.',
+        'success'
+      );
       await reloadGroups();
     } catch (error) {
       flash(error instanceof Error ? error.message : 'Gagal membuat produk.', 'error');

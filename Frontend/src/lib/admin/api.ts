@@ -9,6 +9,18 @@
 
 const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
 
+/**
+ * Jadikan path relatif backend (mis. /uploads/foto.jpg) menjadi URL lengkap
+ * sesuai PUBLIC_API_BASE. URL absolut/data/blob dibiarkan apa adanya.
+ */
+export function resolveApiUrl(path: string): string {
+  if (!path) return path;
+  if (/^(https?:)?\/\//i.test(path) || path.startsWith('data:') || path.startsWith('blob:')) {
+    return path;
+  }
+  return `${API_BASE}${path}`;
+}
+
 export const TOKEN_KEY = 'hero_admin_token';
 export const USER_KEY = 'hero_admin_user';
 
@@ -63,9 +75,21 @@ export interface OrderDto {
   orderId: string;
   grossAmount: number;
   currency: string;
+  customerId: number | null;
   customerName: string | null;
   customerEmail: string | null;
   customerPhone: string | null;
+  shippingName: string | null;
+  shippingPhone: string | null;
+  shippingAddress: string | null;
+  shippingCity: string | null;
+  shippingProvince: string | null;
+  shippingPostalCode: string | null;
+  shippingCountry: string | null;
+  courierName: string | null;
+  shippingCost: number | null;
+  voucherCode: string | null;
+  discountAmount: number | null;
   transactionStatus: string;
   orderStatus: string;
   paymentType: string | null;
@@ -218,6 +242,66 @@ export function updateOrderStatus(id: number, status: string): Promise<OrderDto>
   });
 }
 
+export interface PaymentSyncResult {
+  orderId: string;
+  transactionStatus: string;
+  orderStatus: string;
+}
+
+/** Tarik status pembayaran terbaru order langsung dari Midtrans. */
+export function syncPaymentStatus(orderId: string): Promise<PaymentSyncResult> {
+  return apiFetch<PaymentSyncResult>('/api/payment/sync', {
+    method: 'POST',
+    body: { orderId }
+  });
+}
+
+/* =========================================
+   UPLOAD GAMBAR PRODUK
+========================================= */
+
+export interface UploadedImageDto {
+  url: string;
+}
+
+/** Unggah satu file gambar produk (multipart/form-data). */
+export async function uploadProductImage(file: File): Promise<UploadedImageDto> {
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  const token = getToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const form = new FormData();
+  form.append('image', file);
+
+  // Content-Type tidak diisi manual agar browser menambahkan boundary multipart.
+  const res = await fetch(`${API_BASE}/api/uploads/image`, {
+    method: 'POST',
+    headers,
+    body: form
+  });
+
+  let json: ApiEnvelope<UploadedImageDto> | null = null;
+  try {
+    json = (await res.json()) as ApiEnvelope<UploadedImageDto>;
+  } catch {
+    json = null;
+  }
+
+  if (!res.ok || !json?.success || !json.data) {
+    if (res.status === 401) {
+      clearAuth();
+      if (!window.location.pathname.startsWith('/admin/login')) {
+        window.location.replace('/admin/login');
+      }
+    }
+    throw new ApiError(json?.message || `Gagal mengunggah gambar (HTTP ${res.status})`, res.status);
+  }
+
+  return json.data;
+}
+
 /* =========================================
    PRODUCTS (grup → opsi → varian)
 ========================================= */
@@ -306,4 +390,117 @@ export function deleteVariant(groupId: number, optionId: number, variantId: numb
     `/api/products/${groupId}/options/${optionId}/variants/${variantId}`,
     { method: 'DELETE' }
   );
+}
+
+/* =========================================
+   VOUCHER / DISKON
+========================================= */
+
+export interface VoucherDto {
+  id: number;
+  code: string;
+  description: string | null;
+  type: 'percent' | 'nominal';
+  value: number;
+  minSubtotal: number | null;
+  maxUses: number | null;
+  usedCount: number;
+  validUntil: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VoucherPayload {
+  code: string;
+  description?: string | null;
+  type: 'percent' | 'nominal';
+  value: number;
+  minSubtotal?: number | null;
+  maxUses?: number | null;
+  validUntil?: string | null;
+  isActive: boolean;
+}
+
+export function fetchVouchers(): Promise<VoucherDto[]> {
+  return apiFetch<VoucherDto[]>('/api/vouchers');
+}
+
+export function createVoucher(payload: VoucherPayload): Promise<VoucherDto> {
+  return apiFetch<VoucherDto>('/api/vouchers', { method: 'POST', body: payload });
+}
+
+export function updateVoucher(id: number, payload: VoucherPayload): Promise<VoucherDto> {
+  return apiFetch<VoucherDto>(`/api/vouchers/${id}`, { method: 'PUT', body: payload });
+}
+
+export function deleteVoucher(id: number): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/vouchers/${id}`, { method: 'DELETE' });
+}
+
+/* =========================================
+   KURIR / ONGKIR
+========================================= */
+
+export interface ShippingOptionDto {
+  id: number;
+  name: string;
+  description: string | null;
+  priceIdr: number;
+  isActive: boolean;
+  sortOrder: number;
+}
+
+export interface ShippingOptionPayload {
+  name: string;
+  description?: string | null;
+  priceIdr: number;
+  isActive: boolean;
+  sortOrder?: number;
+}
+
+export function fetchAllShippingOptions(): Promise<ShippingOptionDto[]> {
+  return apiFetch<ShippingOptionDto[]>('/api/shipping-options/all');
+}
+
+export function createShippingOption(payload: ShippingOptionPayload): Promise<ShippingOptionDto> {
+  return apiFetch<ShippingOptionDto>('/api/shipping-options', { method: 'POST', body: payload });
+}
+
+export function updateShippingOption(id: number, payload: ShippingOptionPayload): Promise<ShippingOptionDto> {
+  return apiFetch<ShippingOptionDto>(`/api/shipping-options/${id}`, { method: 'PUT', body: payload });
+}
+
+export function deleteShippingOption(id: number): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/shipping-options/${id}`, { method: 'DELETE' });
+}
+
+/* =========================================
+   PESAN KONTAK (formulir halaman kontak)
+========================================= */
+
+export interface ContactMessageDto {
+  id: number;
+  name: string;
+  email: string;
+  phone: string | null;
+  market: 'Lokal' | 'Export';
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export function fetchContactMessages(): Promise<ContactMessageDto[]> {
+  return apiFetch<ContactMessageDto[]>('/api/contact');
+}
+
+export function updateContactMessage(id: number, isRead: boolean): Promise<ContactMessageDto> {
+  return apiFetch<ContactMessageDto>(`/api/contact/${id}`, {
+    method: 'PATCH',
+    body: { isRead }
+  });
+}
+
+export function deleteContactMessage(id: number): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>(`/api/contact/${id}`, { method: 'DELETE' });
 }

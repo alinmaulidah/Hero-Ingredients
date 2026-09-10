@@ -9,7 +9,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
       <h1>Pesanan</h1>
       <div class="subtitle">
         Status pembayaran diperbarui otomatis dari notifikasi Midtrans
-        (halaman disegarkan otomatis tiap beberapa detik).
+        (halaman disegarkan otomatis tiap beberapa detik). Bila notifikasi
+        tidak masuk, klik <strong>Sinkron</strong> pada baris pesanan untuk
+        menarik status langsung dari Midtrans.
       </div>
     </div>
   </div>
@@ -60,7 +62,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
 <script>
   import { escapeHtml } from '../../lib/catalogHtml';
-  import { fetchOrders, updateOrderStatus, type OrderDto } from '../../lib/admin/api';
+  import { fetchOrders, updateOrderStatus, syncPaymentStatus, type OrderDto } from '../../lib/admin/api';
 
   const ORDER_STATUSES = ['pending', 'processed', 'shipped', 'completed', 'cancelled'];
   const STATUS_LABEL: Record<string, string> = {
@@ -133,6 +135,51 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     return `<ul class="order-items-list">${items}</ul>`;
   }
 
+  function shippingBlock(order: OrderDto): string {
+    if (!order.shippingName) return '';
+    const cityLine = [
+      order.shippingAddress,
+      order.shippingCity,
+      order.shippingProvince,
+      order.shippingPostalCode
+    ]
+      .filter(Boolean)
+      .join(', ');
+    return `
+      <div style="margin-top:0.6rem;">
+        <strong>Alamat pengiriman:</strong>
+        <div>${escapeHtml(order.shippingName)} &bull; ${escapeHtml(order.shippingPhone || '—')}</div>
+        <div class="muted">${escapeHtml(cityLine || '—')}</div>
+      </div>`;
+  }
+
+  function costBreakdownHtml(order: OrderDto): string {
+    const shipping = Number(order.shippingCost) || 0;
+    const discount = Number(order.discountAmount) || 0;
+    const total = Number(order.grossAmount) || 0;
+    const subtotal = total - shipping + discount;
+
+    const lines: [string, string][] = [
+      ['Subtotal produk', formatIDR(subtotal)]
+    ];
+    if (shipping > 0) {
+      lines.push([`Ongkir (${order.courierName || 'Kurir'})`, `+ ${formatIDR(shipping)}`]);
+    }
+    if (discount > 0) {
+      lines.push([`Diskon (${order.voucherCode || 'Voucher'})`, `- ${formatIDR(discount)}`]);
+    }
+    lines.push(['Total dibayar', formatIDR(total)]);
+
+    const rowStyle =
+      'display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:2px 0;';
+    return lines
+      .map(
+        ([label, amount]) =>
+          `<div style="${rowStyle}"><span>${escapeHtml(label)}</span><strong>${amount}</strong></div>`
+      )
+      .join('');
+  }
+
   function renderOrders(orders: OrderDto[], newPaidIds: Set<string>): void {
     if (!listEl) return;
 
@@ -149,8 +196,9 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
         return `
           <tr class="${isNew ? 'order-row-new' : ''}" data-row="${escapeHtml(order.orderId)}">
-            <td>
+            <td style="white-space:nowrap;">
               <button type="button" class="btn btn-sm" data-toggle-detail="${escapeHtml(order.orderId)}">Detail</button>
+              <button type="button" class="btn btn-sm" data-sync-order="${escapeHtml(order.orderId)}" title="Tarik status terbaru dari Midtrans">Sinkron</button>
             </td>
             <td class="muted">${escapeHtml(order.orderId)}</td>
             <td class="muted">${escapeHtml(formatDate(order.createdAt))}</td>
@@ -176,6 +224,10 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
                   ${escapeHtml(order.customerName || '—')} •
                   ${escapeHtml(order.customerEmail || '—')} •
                   ${escapeHtml(order.customerPhone || '—')}
+                </div>
+                ${shippingBlock(order)}
+                <div style="margin-top:0.6rem;">
+                  <strong>Rincian biaya:</strong>${costBreakdownHtml(order)}
                 </div>
               </div>
             </td>
@@ -269,9 +321,39 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     }
   }
 
-  /* Toggle detail baris */
-  listEl?.addEventListener('click', (e) => {
-    const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-toggle-detail]');
+  /* Toggle detail baris + sinkron status dari Midtrans */
+  listEl?.addEventListener('click', async (e) => {
+    const target = e.target as HTMLElement | null;
+
+    const syncBtn = target?.closest<HTMLButtonElement>('[data-sync-order]');
+    if (syncBtn) {
+      const orderId = syncBtn.dataset.syncOrder || '';
+      if (!orderId) return;
+
+      syncBtn.disabled = true;
+      syncBtn.textContent = '…';
+
+      try {
+        const result = await syncPaymentStatus(orderId);
+        await loadOrders();
+        listEl.insertAdjacentHTML(
+          'afterbegin',
+          `<div class="alert alert-success">Status ${escapeHtml(orderId)} disinkronkan — pembayaran: <strong>${escapeHtml(result.transactionStatus)}</strong>, pesanan: <strong>${escapeHtml(result.orderStatus)}</strong>.</div>`
+        );
+      } catch (error) {
+        syncBtn.disabled = false;
+        syncBtn.textContent = 'Sinkron';
+        listEl.insertAdjacentHTML(
+          'afterbegin',
+          `<div class="alert alert-error">Gagal sinkron ${escapeHtml(orderId)}: ${escapeHtml(
+            error instanceof Error ? error.message : 'terjadi kesalahan'
+          )}</div>`
+        );
+      }
+      return;
+    }
+
+    const btn = target?.closest<HTMLButtonElement>('[data-toggle-detail]');
     if (!btn) return;
 
     const orderId = btn.dataset.toggleDetail;

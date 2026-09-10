@@ -1,0 +1,662 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const CLIENT_KEY = import.meta.env.PUBLIC_MIDTRANS_CLIENT_KEY || '';
+
+// Mode Snap: env var override lebih dulu; kalau kosong, ditebak dari prefix key.
+const envProdFlag = String(import.meta.env.PUBLIC_MIDTRANS_IS_PRODUCTION ?? '').toLowerCase();
+const isMidtransProduction = envProdFlag === '' ? CLIENT_KEY.startsWith('Mid-client-') : envProdFlag === 'true';
+---
+
+<Layout title="Checkout - " stylesheet="/styles/checkout.css">
+
+  <!-- Halaman checkout wajib login: tanpa sesi → arahkan ke /login. -->
+  <script is:inline>
+    (function () {
+      try {
+        if (!localStorage.getItem('hero_customer_token')) {
+          window.location.replace('/login?next=' + encodeURIComponent('/checkout'));
+        }
+      } catch (e) { /* abaikan */ }
+    })();
+  </script>
+
+  <!-- Midtrans Snap SDK -->
+  <script
+    src={isMidtransProduction
+      ? 'https://app.midtrans.com/snap/snap.js'
+      : 'https://app.sandbox.midtrans.com/snap/snap.js'}
+    data-client-key={CLIENT_KEY}
+  ></script>
+
+  <main class="checkout-page">
+    <div class="container checkout-container">
+
+      <div class="checkout-head">
+        <a href="/products" class="checkout-back">&larr; Lanjut Belanja</a>
+        <h1>Checkout</h1>
+        <p class="muted">Pembayaran online diproses dalam Rupiah (IDR) melalui Midtrans.</p>
+      </div>
+
+      <!-- KERANJANG KOSONG -->
+      <div id="empty-cart" class="checkout-empty" hidden>
+        <h2>Keranjang belanja Anda kosong</h2>
+        <p>Tambahkan produk terlebih dahulu di halaman katalog.</p>
+        <a href="/products" class="checkout-pay-btn">Lihat Produk</a>
+      </div>
+
+      <!-- KONTEN CHECKOUT -->
+      <div id="checkout-wrap" class="checkout-wrap" hidden>
+
+        <div class="checkout-main">
+
+          <!-- LANGKAH 1: ALAMAT -->
+          <section class="checkout-card" id="step-address">
+            <header class="card-head">
+              <span class="step-no">1</span>
+              <h2>Alamat Pengiriman</h2>
+            </header>
+
+            <p id="address-error" class="step-error" hidden></p>
+            <div id="address-list" class="option-list"></div>
+
+            <button type="button" class="btn-link" id="toggle-new-address">
+              + Pakai alamat baru
+            </button>
+
+            <form id="new-address-form" class="addr-form" hidden novalidate>
+              <div class="addr-form-grid">
+                <div class="field">
+                  <label for="addr-label">Label <span class="muted">(opsional)</span></label>
+                  <input id="addr-label" class="input" placeholder="mis. Rumah / Kantor" />
+                </div>
+                <div class="field">
+                  <label for="addr-name">Nama Penerima</label>
+                  <input id="addr-name" class="input" placeholder="Nama penerima" />
+                </div>
+                <div class="field">
+                  <label for="addr-phone">No. HP</label>
+                  <input id="addr-phone" class="input" type="tel" placeholder="08xxxxxxxxxx" />
+                </div>
+                <div class="field field-wide">
+                  <label for="addr-line">Alamat Lengkap</label>
+                  <textarea id="addr-line" class="input" rows="2" placeholder="Jalan, nomor rumah, RT/RW, kelurahan, kecamatan"></textarea>
+                </div>
+                <div class="field">
+                  <label for="addr-province">Provinsi</label>
+                  <input id="addr-province" class="input" placeholder="mis. Jawa Barat" />
+                </div>
+                <div class="field">
+                  <label for="addr-city">Kota / Kabupaten</label>
+                  <input id="addr-city" class="input" placeholder="mis. Bandung" />
+                </div>
+                <div class="field">
+                  <label for="addr-postal">Kode Pos</label>
+                  <input id="addr-postal" class="input" inputmode="numeric" placeholder="40111" />
+                </div>
+              </div>
+
+              <p id="new-address-error" class="step-error" hidden></p>
+
+              <div class="form-actions">
+                <button type="button" class="btn btn-ghost" id="cancel-new-address">Batal</button>
+                <button type="submit" class="btn btn-primary" id="save-address-btn">Simpan & Pakai Alamat Ini</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- LANGKAH 2: KURIR -->
+          <section class="checkout-card" id="step-shipping">
+            <header class="card-head">
+              <span class="step-no">2</span>
+              <h2>Kurir Pengiriman</h2>
+            </header>
+
+            <p id="shipping-error" class="step-error" hidden></p>
+            <div id="shipping-list" class="option-list"></div>
+          </section>
+
+          <!-- LANGKAH 3: VOUCHER -->
+          <section class="checkout-card" id="step-voucher">
+            <header class="card-head">
+              <span class="step-no">3</span>
+              <h2>Voucher / Diskon</h2>
+              <span class="muted">(opsional)</span>
+            </header>
+
+            <div id="voucher-form" class="voucher-form">
+              <input id="voucher-input" class="input" placeholder="Masukkan kode voucher" autocomplete="off" />
+              <button type="button" class="btn btn-primary" id="apply-voucher-btn">Pakai</button>
+            </div>
+            <p id="voucher-msg" class="voucher-msg" hidden></p>
+
+            <div id="voucher-applied" class="voucher-applied" hidden>
+              <div>
+                <strong id="applied-code"></strong>
+                <p id="applied-desc" class="muted"></p>
+              </div>
+              <button type="button" class="btn-link" id="remove-voucher-btn">Hapus</button>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- RINGKASAN & BAYAR -->
+        <aside class="checkout-summary" aria-label="Ringkasan pesanan">
+          <h2>Ringkasan Pesanan</h2>
+
+          <div id="summary-items" class="summary-items"></div>
+
+          <dl class="summary-lines">
+            <div class="summary-line">
+              <dt>Subtotal Produk</dt>
+              <dd id="line-subtotal">Rp 0</dd>
+            </div>
+            <div class="summary-line">
+              <dt id="line-shipping-label">Ongkir</dt>
+              <dd id="line-shipping">—</dd>
+            </div>
+            <div class="summary-line summary-discount" id="line-discount-row" hidden>
+              <dt>Diskon Voucher</dt>
+              <dd id="line-discount">—</dd>
+            </div>
+            <div class="summary-line summary-total">
+              <dt>Total Pembayaran</dt>
+              <dd id="line-total">Rp 0</dd>
+            </div>
+          </dl>
+
+          <p id="pay-error" class="step-error" hidden></p>
+
+          <button type="button" id="pay-button" class="checkout-pay-btn" disabled>
+            Bayar Sekarang
+          </button>
+          <p class="pay-note muted">Dengan menekan tombol ini Anda akan diarahkan ke halaman pembayaran Midtrans.</p>
+        </aside>
+
+      </div>
+
+      <!-- SUKSES -->
+      <div id="pay-success" class="checkout-success" hidden>
+        <div class="success-icon">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        </div>
+        <h2>Pesanan Berhasil Dibuat!</h2>
+        <p>Status pembayaran akan kami proses. Keranjang Anda sudah dikosongkan.</p>
+        <div class="success-actions">
+          <a href="/products" class="btn btn-primary">Kembali ke Katalog</a>
+          <a href="/" class="btn btn-ghost">Beranda</a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</Layout>
+
+<script>
+  import { escapeHtml } from '../lib/catalogHtml';
+  import {
+    clearCart,
+    createAddress,
+    createCharge,
+    fetchAddresses,
+    fetchShippingOptions,
+    loadCart,
+    saveCart,
+    syncPaymentStatus,
+    validateVoucher,
+    type CartItem,
+    type CustomerAddress,
+    type ShippingOption,
+    type VoucherCheckResult
+  } from '../lib/customer/api';
+
+  /* =========================================
+     STATE
+  ========================================== */
+
+  const cart: CartItem[] = loadCart();
+  let addresses: CustomerAddress[] = [];
+  let selectedAddressId: number | null = null;
+  let shippingOptions: ShippingOption[] = [];
+  let selectedShippingId: number | null = null;
+  let voucher: VoucherCheckResult | null = null;
+  let paying = false;
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.prices.IDR || 0) * item.qty, 0);
+
+  const wrapEl = document.getElementById('checkout-wrap');
+  const emptyEl = document.getElementById('empty-cart');
+
+  function formatIDR(value: number): string {
+    return `Rp ${(Number(value) || 0).toLocaleString('id-ID')}`;
+  }
+
+  const setError = (id: string, message: string | null): void => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (message) {
+      el.textContent = message;
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+      el.textContent = '';
+    }
+  };
+
+  /* =========================================
+     RINGKASAN & TOTAL
+  ========================================== */
+
+  const shippingCost = () => {
+    const option = shippingOptions.find((o) => o.id === selectedShippingId);
+    return option ? option.priceIdr : 0;
+  };
+
+  const discountAmount = () => (voucher ? voucher.discount : 0);
+
+  const totalAmount = () => subtotal + shippingCost() - discountAmount();
+
+  function renderSummaryItems(): void {
+    const box = document.getElementById('summary-items');
+    if (!box) return;
+
+    if (cart.length === 0) {
+      box.innerHTML = '<div class="empty-inline">Belum ada produk.</div>';
+      return;
+    }
+
+    box.innerHTML = cart
+      .map((item) => {
+        const price = item.prices.IDR || 0;
+        return `
+          <div class="summary-item">
+            <div class="summary-item-info">
+              <img src="${escapeHtml(item.imageUrl)}" alt="" loading="lazy"
+                onerror="this.onerror=null; this.src='/images/products/placeholder.svg';" />
+              <div>
+                <strong>${escapeHtml(item.name)}</strong>
+                <span class="muted">${escapeHtml(item.optionName || item.spec || '')} &middot; ${escapeHtml(item.size)} &times; ${item.qty}</span>
+              </div>
+            </div>
+            <span>${formatIDR(price * item.qty)}</span>
+          </div>`;
+      })
+      .join('');
+  }
+
+  function updateSummary(): void {
+    const shipping = shippingCost();
+    const discount = discountAmount();
+
+    const setText = (id: string, text: string): void => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setText('line-subtotal', formatIDR(subtotal));
+
+    const shipOption = shippingOptions.find((o) => o.id === selectedShippingId);
+    setText('line-shipping', selectedShippingId && shipOption ? `${formatIDR(shipping)} (${shipOption.name})` : '—');
+    setText('line-shipping-label', selectedShippingId && shipOption ? `Ongkir (${shipOption.name})` : 'Ongkir');
+
+    const discountRow = document.getElementById('line-discount-row');
+    const discountEl = document.getElementById('line-discount');
+    if (discountRow && discountEl) {
+      if (discount > 0) {
+        discountRow.hidden = false;
+        discountEl.textContent = `- ${formatIDR(discount)}`;
+      } else {
+        discountRow.hidden = true;
+      }
+    }
+
+    setText('line-total', formatIDR(totalAmount()));
+
+    const payBtn = document.getElementById('pay-button') as HTMLButtonElement | null;
+    if (payBtn) {
+      const ready = Boolean(selectedAddressId) && Boolean(selectedShippingId) && cart.length > 0;
+      payBtn.disabled = !ready || paying;
+    }
+  }
+
+  /* =========================================
+     LANGKAH 1 — ALAMAT
+  ========================================== */
+
+  function renderAddresses(): void {
+    const listEl = document.getElementById('address-list');
+    if (!listEl) return;
+
+    if (addresses.length === 0) {
+      listEl.innerHTML = '<div class="muted">Belum ada alamat. Tambahkan alamat pengiriman Anda.</div>';
+      return;
+    }
+
+    listEl.innerHTML = addresses
+      .map((addr) => {
+        const checked = selectedAddressId === addr.id;
+        return `
+          <label class="option-item ${checked ? 'selected' : ''}">
+            <input type="radio" name="address" value="${addr.id}" ${checked ? 'checked' : ''} />
+            <span class="option-body">
+              <strong>${escapeHtml(addr.recipientName)}${addr.label ? ` <em class="chip-label">${escapeHtml(addr.label)}</em>` : ''}${addr.isDefault ? ' <em class="chip-label">Utama</em>' : ''}</strong>
+              <span class="muted">${escapeHtml(addr.phone)}</span>
+              <span class="addr-text">${escapeHtml(addr.addressLine)}, ${escapeHtml(addr.city)}, ${escapeHtml(addr.province)} ${escapeHtml(addr.postalCode)}</span>
+            </span>
+          </label>`;
+      })
+      .join('');
+
+    listEl.querySelectorAll<HTMLInputElement>('input[name="address"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        selectedAddressId = Number(input.value);
+        addresses.forEach((a) => (a.isDefault = false));
+        listEl.querySelectorAll('.option-item').forEach((item, index) => {
+          item.classList.toggle('selected', addresses[index]?.id === selectedAddressId);
+        });
+        setError('address-error', null);
+        updateSummary();
+      });
+    });
+  }
+
+  const toggleNewAddressForm = (show: boolean): void => {
+    const form = document.getElementById('new-address-form');
+    const btn = document.getElementById('toggle-new-address');
+    if (form) form.hidden = !show;
+    if (btn) {
+      btn.hidden = show;
+      btn.textContent = show ? '' : '+ Pakai alamat baru';
+    }
+    setError('new-address-error', null);
+  };
+
+  document.getElementById('toggle-new-address')?.addEventListener('click', () => toggleNewAddressForm(true));
+  document.getElementById('cancel-new-address')?.addEventListener('click', () => toggleNewAddressForm(false));
+
+  document.getElementById('new-address-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const val = (id: string): string => (document.getElementById(id) as HTMLInputElement).value.trim();
+
+    const payload = {
+      label: val('addr-label'),
+      recipientName: val('addr-name'),
+      phone: val('addr-phone'),
+      addressLine: val('addr-line'),
+      city: val('addr-city'),
+      province: val('addr-province'),
+      postalCode: val('addr-postal')
+    };
+
+    const required: [string, string][] = [
+      ['recipientName', 'Nama penerima wajib diisi.'],
+      ['phone', 'No. HP wajib diisi.'],
+      ['addressLine', 'Alamat lengkap wajib diisi.'],
+      ['city', 'Kota wajib diisi.'],
+      ['province', 'Provinsi wajib diisi.'],
+      ['postalCode', 'Kode pos wajib diisi.']
+    ];
+    for (const [key, msg] of required) {
+      if (!payload[key as keyof typeof payload]) {
+        setError('new-address-error', msg);
+        return;
+      }
+    }
+
+    const saveBtn = document.getElementById('save-address-btn') as HTMLButtonElement | null;
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+    }
+
+    try {
+      const created = await createAddress(payload);
+      addresses = await fetchAddresses();
+      selectedAddressId = created.id;
+      renderAddresses();
+      toggleNewAddressForm(false);
+      updateSummary();
+    } catch (err) {
+      setError('new-address-error', err instanceof Error ? err.message : 'Gagal menyimpan alamat.');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan & Pakai Alamat Ini';
+      }
+    }
+  });
+
+  /* =========================================
+     LANGKAH 2 — KURIR
+  ========================================== */
+
+  function renderShipping(): void {
+    const listEl = document.getElementById('shipping-list');
+    if (!listEl) return;
+
+    if (shippingOptions.length === 0) {
+      listEl.innerHTML = '<div class="muted">Belum ada kurir tersedia. Hubungi kami untuk pengiriman manual.</div>';
+      return;
+    }
+
+    listEl.innerHTML = shippingOptions
+      .map((option) => {
+        const checked = selectedShippingId === option.id;
+        return `
+          <label class="option-item ${checked ? 'selected' : ''}">
+            <input type="radio" name="shipping" value="${option.id}" ${checked ? 'checked' : ''} />
+            <span class="option-body">
+              <strong>${escapeHtml(option.name)}</strong>
+              <span class="muted">${escapeHtml(option.description || '')}</span>
+              <span class="option-price">${formatIDR(option.priceIdr)}</span>
+            </span>
+          </label>`;
+      })
+      .join('');
+
+    listEl.querySelectorAll<HTMLInputElement>('input[name="shipping"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        selectedShippingId = Number(input.value);
+        listEl.querySelectorAll('.option-item').forEach((item, index) => {
+          item.classList.toggle('selected', shippingOptions[index]?.id === selectedShippingId);
+        });
+        setError('shipping-error', null);
+        updateSummary();
+      });
+    });
+  }
+
+  /* =========================================
+     LANGKAH 3 — VOUCHER
+  ========================================== */
+
+  const voucherFormEl = document.getElementById('voucher-form');
+  const voucherAppliedEl = document.getElementById('voucher-applied');
+  const voucherMsgEl = document.getElementById('voucher-msg');
+
+  function renderVoucher(): void {
+    if (voucherMsgEl) voucherMsgEl.hidden = true;
+    if (voucherAppliedEl) voucherAppliedEl.hidden = !voucher;
+    if (voucherFormEl) voucherFormEl.hidden = Boolean(voucher);
+
+    const codeEl = document.getElementById('applied-code');
+    const descEl = document.getElementById('applied-desc');
+    if (codeEl) codeEl.textContent = voucher ? voucher.code : '';
+    if (descEl) {
+      descEl.textContent = voucher
+        ? `${voucher.description || ''} (potongan ${formatIDR(voucher.discount)})`
+        : '';
+    }
+    updateSummary();
+  }
+
+  document.getElementById('apply-voucher-btn')?.addEventListener('click', async () => {
+    const input = document.getElementById('voucher-input') as HTMLInputElement | null;
+    const code = (input?.value || '').trim();
+    if (!code) {
+      setError('voucher-msg', 'Masukkan kode voucher terlebih dahulu.');
+      return;
+    }
+
+    const btn = document.getElementById('apply-voucher-btn') as HTMLButtonElement | null;
+    if (btn) btn.disabled = true;
+
+    try {
+      const result = await validateVoucher(code, subtotal);
+      voucher = result;
+      renderVoucher();
+      if (input) input.value = '';
+    } catch (err) {
+      voucher = null;
+      renderVoucher();
+      setError('voucher-msg', err instanceof Error ? err.message : 'Kode voucher tidak valid.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+
+  document.getElementById('remove-voucher-btn')?.addEventListener('click', () => {
+    voucher = null;
+    renderVoucher();
+  });
+
+  /* =========================================
+     BAYAR (Midtrans Snap)
+  ========================================== */
+
+  function showError(id: string, message: string | null): void {
+    setError(id, message);
+  }
+
+  /**
+   * Tarik status pesanan langsung dari Midtrans sesudah pembayaran berhasil.
+   * Ini jaring pengaman bila webhook tidak sampai ke server (mis. saat
+   * pengembangan lokal tanpa URL publik), supaya status tidak tertinggal
+   * "pending" dan notifikasi Telegram tetap terkirim.
+   */
+  async function syncOrderStatusWithRetry(orderId: string, attempt = 0): Promise<void> {
+    try {
+      const status = await syncPaymentStatus(orderId);
+      if (status.transactionStatus === 'pending' && attempt < 2) {
+        window.setTimeout(() => void syncOrderStatusWithRetry(orderId, attempt + 1), 2500);
+      }
+    } catch {
+      // Diabaikan — webhook Midtrans tetap jalur utama.
+    }
+  }
+
+  document.getElementById('pay-button')?.addEventListener('click', async () => {
+    showError('pay-error', null);
+
+    if (!selectedAddressId) {
+      showError('pay-error', 'Pilih alamat pengiriman terlebih dahulu.');
+      return;
+    }
+    if (!selectedShippingId) {
+      showError('pay-error', 'Pilih kurir pengiriman terlebih dahulu.');
+      return;
+    }
+
+    const total = totalAmount();
+    if (total < 10000) {
+      showError('pay-error', 'Minimal transaksi pembayaran via Midtrans adalah Rp 10.000.');
+      return;
+    }
+
+    const payBtn = document.getElementById('pay-button') as HTMLButtonElement | null;
+    if (payBtn) {
+      payBtn.disabled = true;
+      payBtn.textContent = 'Menyiapkan Pembayaran...';
+    }
+    paying = true;
+
+    try {
+      const result = await createCharge({
+        currency: 'IDR',
+        addressId: selectedAddressId,
+        shippingOptionId: selectedShippingId,
+        voucherCode: voucher ? voucher.code : null,
+        items: cart.map((item) => ({
+          id: item.cartItemId,
+          price: Math.round(item.prices.IDR || 0),
+          quantity: item.qty,
+          name: `${item.name} ${item.optionName || item.spec || ''} (${item.size})`
+            .replace(/\s+/g, ' ')
+            .trim()
+            .substring(0, 50)
+        }))
+      });
+
+      // @ts-ignore — window.snap disediakan oleh SDK Midtrans
+      window.snap.pay(result.token, {
+        onSuccess: () => {
+          clearCart();
+          saveCart([]);
+          if (wrapEl) wrapEl.hidden = true;
+          if (emptyEl) emptyEl.hidden = true;
+          const successEl = document.getElementById('pay-success');
+          if (successEl) successEl.hidden = false;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+
+          // Sinkronkan status sekarang juga (tidak menunggu webhook).
+          void syncOrderStatusWithRetry(result.orderId);
+        },
+        onPending: () => {
+          alert('Selesaikan pembayaran Anda di popup yang muncul.');
+        },
+        onError: () => {
+          showError('pay-error', 'Gagal memproses pembayaran. Silakan coba lagi.');
+        },
+        onClose: () => {
+          showError('pay-error', 'Anda menutup jendela pembayaran. Pesanan belum dibayar.');
+        }
+      });
+    } catch (err) {
+      showError('pay-error', err instanceof Error ? err.message : 'Terjadi kesalahan koneksi ke server.');
+    } finally {
+      paying = false;
+      if (payBtn) {
+        payBtn.disabled = false;
+        payBtn.textContent = 'Bayar Sekarang';
+      }
+      updateSummary();
+    }
+  });
+
+  /* =========================================
+     INISIALISASI
+  ========================================== */
+
+  if (cart.length === 0) {
+    if (wrapEl) wrapEl.hidden = true;
+    if (emptyEl) emptyEl.hidden = false;
+  } else {
+    if (emptyEl) emptyEl.hidden = true;
+    if (wrapEl) wrapEl.hidden = false;
+    renderSummaryItems();
+
+    Promise.all([fetchAddresses(), fetchShippingOptions()])
+      .then(([addrList, shipList]) => {
+        addresses = addrList;
+        shippingOptions = shipList;
+
+        // Pilih alamat default / pertama secara otomatis.
+        const preferred =
+          addresses.find((a) => a.isDefault) || addresses[0] || null;
+        if (preferred) {
+          selectedAddressId = preferred.id;
+        }
+
+        renderAddresses();
+        renderShipping();
+        updateSummary();
+      })
+      .catch((err) => {
+        setError('address-error', err instanceof Error ? err.message : 'Gagal memuat data checkout.');
+      });
+  }
+</script>

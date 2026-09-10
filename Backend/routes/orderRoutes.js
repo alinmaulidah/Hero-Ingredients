@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { protect } = require('../middleware/authMiddleware');
+const { protectAdmin } = require('../middleware/authMiddleware');
 const {
   getOrders,
   getOrderById,
@@ -9,8 +9,8 @@ const {
 
 const router = express.Router();
 
-router.get('/', protect, getOrders);
-router.get('/:id', protect, getOrderById);
-router.patch('/:id/status', protect, updateOrderStatus);
+router.get('/', protectAdmin, getOrders);
+router.get('/:id', protectAdmin, getOrderById);
+router.patch('/:id/status', protectAdmin, updateOrderStatus);
 
 module.exports = router;

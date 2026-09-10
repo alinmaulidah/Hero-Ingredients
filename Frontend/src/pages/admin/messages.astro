@@ -1,0 +1,201 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Pesan Masuk" active="messages">
+
+  <div class="page-head">
+    <div>
+      <h1>Pesan Masuk</h1>
+      <div class="subtitle">
+        Pesan dari formulir "Kirim Pesan" di halaman kontak website.
+      </div>
+    </div>
+    <div class="toolbar-actions">
+      <span class="muted" id="unread-count"></span>
+      <button type="button" class="btn" id="refresh-btn">Segarkan</button>
+    </div>
+  </div>
+
+  <div id="flash"></div>
+
+  <div id="messages-container">
+    <div class="loading">Memuat pesan…</div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  import { escapeHtml } from '../../lib/catalogHtml';
+  import {
+    deleteContactMessage,
+    fetchContactMessages,
+    updateContactMessage,
+    type ContactMessageDto
+  } from '../../lib/admin/api';
+
+  const container = document.getElementById('messages-container');
+  const flashEl = document.getElementById('flash');
+  const unreadEl = document.getElementById('unread-count');
+
+  let messages: ContactMessageDto[] = [];
+
+  function formatDate(iso: string): string {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '—';
+    return d.toLocaleString('id-ID', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function flash(message: string, type: 'error' | 'success'): void {
+    if (!flashEl) return;
+    flashEl.innerHTML = `<div class="alert alert-${type}">${escapeHtml(message)}</div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderMessageCard(message: ContactMessageDto): string {
+    return `
+      <div class="card msg-card ${message.isRead ? '' : 'msg-unread'}" data-id="${message.id}">
+        <div class="msg-head">
+          <div class="msg-sender">
+            <strong>${escapeHtml(message.name)}</strong>
+            ${message.isRead
+              ? '<span class="chip">Sudah dibaca</span>'
+              : '<span class="chip chip-green">Baru</span>'}
+            <span class="chip">${escapeHtml(message.market)}</span>
+          </div>
+          <span class="muted msg-date">${escapeHtml(formatDate(message.createdAt))}</span>
+        </div>
+
+        <div class="msg-contact muted">
+          ${escapeHtml(message.email)}${message.phone ? ` &bull; ${escapeHtml(message.phone)}` : ''}
+        </div>
+
+        <p class="msg-text">${escapeHtml(message.message)}</p>
+
+        <div class="msg-actions">
+          <button type="button" class="btn btn-sm" data-action="toggle-read" data-id="${message.id}">
+            ${message.isRead ? 'Tandai belum dibaca' : 'Tandai sudah dibaca'}
+          </button>
+          <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${message.id}">
+            Hapus
+          </button>
+        </div>
+      </div>`;
+  }
+
+  function updateUnreadCount(): void {
+    const unread = messages.filter((m) => !m.isRead).length;
+    if (unreadEl) {
+      unreadEl.textContent = unread > 0 ? `${unread} pesan belum dibaca` : 'Semua pesan sudah dibaca';
+    }
+  }
+
+  async function loadMessages(): Promise<void> {
+    try {
+      messages = await fetchContactMessages();
+      updateUnreadCount();
+      if (!container) return;
+
+      if (messages.length === 0) {
+        container.innerHTML =
+          '<div class="card"><div class="empty-state">Belum ada pesan masuk dari halaman kontak.</div></div>';
+        return;
+      }
+
+      container.innerHTML = messages.map(renderMessageCard).join('');
+    } catch (error) {
+      if (container) {
+        container.innerHTML = `<div class="alert alert-error">${
+          error instanceof Error ? escapeHtml(error.message) : 'Gagal memuat pesan.'
+        }</div>`;
+      }
+    }
+  }
+
+  container?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-action]');
+    if (!btn) return;
+
+    const id = Number(btn.dataset.id);
+    const action = btn.dataset.action;
+    const message = messages.find((m) => m.id === id);
+    if (!message) return;
+
+    if (action === 'toggle-read') {
+      btn.disabled = true;
+      try {
+        await updateContactMessage(id, !message.isRead);
+        await loadMessages();
+      } catch (error) {
+        flash(error instanceof Error ? error.message : 'Gagal memperbarui pesan.', 'error');
+      }
+    } else if (action === 'delete') {
+      if (!window.confirm(`Hapus pesan dari ${message.name}?`)) return;
+      try {
+        await deleteContactMessage(id);
+        await loadMessages();
+      } catch (error) {
+        flash(error instanceof Error ? error.message : 'Gagal menghapus pesan.', 'error');
+      }
+    }
+  });
+
+  document.getElementById('refresh-btn')?.addEventListener('click', loadMessages);
+
+  loadMessages();
+</script>
+
+<style>
+  .msg-card {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+
+  .msg-card.msg-unread {
+    border-left: 3px solid var(--primary, #2d6a4f);
+  }
+
+  .msg-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .msg-sender {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .msg-date {
+    font-size: 12px;
+  }
+
+  .msg-contact {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .msg-text {
+    margin: 10px 0 12px;
+    color: #1e293b;
+    white-space: pre-line;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .msg-actions {
+    display: flex;
+    gap: 8px;
+  }
+</style>

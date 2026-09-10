@@ -4,7 +4,7 @@
 
 # communication
 - User communicates in informal Indonesian (Bahasa Indonesia); match that language in replies and summaries. Confidence: 0.9
-- Gives the assistant latitude to adapt their input to the existing app structure ("list-nya disesuaikan lagi aja" — just adjust it accordingly) and goes along with the recommended options when the assistant offers choices, rather than prescribing exact implementation details. Confidence: 0.5
+- Gives the assistant latitude to adapt their input to the existing app structure ("list-nya disesuaikan lagi aja" — just adjust it accordingly) and goes along with the recommended options when the assistant offers choices, rather than prescribing exact implementation details. Confidence: 0.65
 
 # environment
 See [environment/taste.md](environment/taste.md)
@@ -17,11 +17,10 @@ See [environment/taste.md](environment/taste.md)
 - All user-facing text across project pages (CompanyProfile.astro, about.astro, etc.) must include bilingual `data-lang-id` (Indonesian) and `data-lang-en` (English) attributes, with visible fallback text defaulting to Indonesian. Confidence: 0.80
 
 # e-commerce
-- Prefers guest checkout (no mandatory login/account) for the catalog storefront; checkout form data + payment gateway (Midtrans) order history suffice. Prefers keeping purchase friction low for this B2B company-profile site. Confidence: 0.8
-- Expects a web-based admin panel (admin login + product entry/CRUD + order list with payment status/notifications) for managing the store, not raw API calls (Postman), seed scripts, or manual DB edits. Confidence: 0.7
-- Prefers the admin dashboard and the buyer storefront built/deployed together on a single hosting/domain (same-origin, e.g. `/admin` UI + `/api` behind one server) rather than as separate apps; when discussing hosting, expects the admin to automatically ride along to the same hosting as the website. Confidence: 0.7
-ogether on a single hosting/domain (same-origin, e.g. `/admin` UI + `/api` behind one server) rather than as separate apps. Confidence: 0.6
-
+See [e-commerce/taste.md](e-commerce/taste.md)
 # ui / branding
 - Expects brand/logo text to be rendered identically across all components: the footer must show "HERO INGREDIENTS" in all caps exactly like the navbar — including whitespace fidelity ("HERO INGREDIENTS", not "HEROINGREDIENTS") — and rejects cosmetic restyling of brand text in one spot (e.g., title-casing or losing the space between logo words) that diverges from the established display elsewhere. Confidence: 0.7
 - Keeps the footer "Hubungi Kami" contact block lean: explicitly wants the website URL line removed and the phone number shown as the WhatsApp number — no separate Web entry and no duplicated Telp/WA lines in user-facing contact content. Confidence: 0.5
+- Prefers single-purpose public pages to stay lean and open directly with their functional content: the contact page should show only the contact details + map (plus the working form), explicitly removing the decorative big hero banner from the top of it. Confidence: 0.55
+- Cares about polish of storefront/auth-page interactions: complained the Masuk↔Daftar tab switching felt jumpy/rough and the flow was confusing — expects smooth state transitions (fade + slight slide, no layout jumping, autofocus on the first field) and sensible redirects (only send to checkout when arriving from a buy button; otherwise land back on the catalog, not an empty checkout). Also explicitly verifies tab behavior afterwards: when "Masuk" is active only the login form may be visible, and switching to "Daftar" must hide it entirely — inactive panels must be truly hidden (display:none), not left visible under/next to the active one. Confidence: 0.65
+- Expects key account actions to be surfaced as a clearly visible button, not a thin link: requested a proper pill-style "Masuk" button in the navbar (desktop and mobile) that turns into "Keluar" and logs out when a customer session exists. Confidence: 0.55

@@ -1,0 +1,326 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="Voucher" active="vouchers">
+
+  <div class="page-head">
+    <div>
+      <h1>Voucher / Diskon</h1>
+      <div class="subtitle">
+        Kode voucher yang dipakai pelanggan saat checkout di toko online.
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary" id="btn-add-voucher">+ Tambah Voucher</button>
+  </div>
+
+  <div id="flash"></div>
+
+  <!-- Editor voucher (tambah & ubah) -->
+  <div class="card" id="voucher-editor" hidden>
+    <div class="card-title" id="editor-title">Voucher Baru</div>
+    <div class="form-grid">
+      <div class="form-row">
+        <label for="f-code">Kode Voucher</label>
+        <input id="f-code" class="input" placeholder="mis. HERO10" maxlength="50" />
+        <div class="hint">Huruf besar/kecil otomatis dinormalisasi; dipakai pelanggan saat checkout.</div>
+      </div>
+
+      <div class="form-row">
+        <label for="f-description">Deskripsi <span class="muted">(opsional)</span></label>
+        <input id="f-description" class="input" placeholder="mis. Diskon 10% untuk pembelian pertama" maxlength="255" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-type">Jenis Diskon</label>
+        <select id="f-type" class="input">
+          <option value="percent">Persen (%) dari subtotal</option>
+          <option value="nominal">Nominal (Rp)</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="f-value">Nilai Diskon</label>
+        <input id="f-value" type="number" class="input" min="0" placeholder="mis. 10 untuk 10%" />
+        <div class="hint" id="value-hint">Persen dari subtotal produk (mis. 10 = 10%).</div>
+      </div>
+
+      <div class="form-row">
+        <label for="f-min-subtotal">Minimal Belanja (Rp) <span class="muted">— opsional</span></label>
+        <input id="f-min-subtotal" type="number" class="input" min="0" placeholder="mis. 100000 (kosongkan = tanpa minimal)" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-max-uses">Batas Pemakaian <span class="muted">— opsional</span></label>
+        <input id="f-max-uses" type="number" class="input" min="1" placeholder="mis. 50 (kosongkan = tanpa batas)" />
+      </div>
+
+      <div class="form-row">
+        <label for="f-valid-until">Berlaku Sampai <span class="muted">— opsional</span></label>
+        <input id="f-valid-until" type="datetime-local" class="input" />
+        <div class="hint">Kosongkan bila tanpa batas waktu.</div>
+      </div>
+
+      <div class="form-row">
+        <label class="check-label">
+          <input id="f-active" type="checkbox" checked />
+          Aktif (bisa dipakai pelanggan)
+        </label>
+      </div>
+    </div>
+
+    <div class="editor-actions">
+      <button type="button" class="btn" id="cancel-editor">Batal</button>
+      <button type="button" class="btn btn-primary" id="save-voucher">Simpan Voucher</button>
+    </div>
+  </div>
+
+  <div id="vouchers-container">
+    <div class="loading">Memuat voucher…</div>
+  </div>
+
+</AdminLayout>
+
+<script>
+  import { escapeHtml } from '../../lib/catalogHtml';
+  import {
+    createVoucher,
+    updateVoucher,
+    deleteVoucher,
+    fetchVouchers,
+    type VoucherDto
+  } from '../../lib/admin/api';
+
+  const container = document.getElementById('vouchers-container');
+  const flashEl = document.getElementById('flash');
+  const editor = document.getElementById('voucher-editor');
+  const editorTitle = document.getElementById('editor-title');
+
+  let vouchers: VoucherDto[] = [];
+  let editingId: number | null = null;
+
+  function formatIDR(value: number): string {
+    return `Rp ${(Number(value) || 0).toLocaleString('id-ID')}`;
+  }
+
+  function formatDate(value: string | null): string {
+    if (!value) return 'Tanpa batas';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return 'Tanpa batas';
+    return d.toLocaleString('id-ID', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    });
+  }
+
+  function flash(message: string, type: 'error' | 'success'): void {
+    if (!flashEl) return;
+    flashEl.innerHTML = `<div class="alert alert-${type}">${escapeHtml(message)}</div>`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function numOrNull(value: string): number | null {
+    const text = String(value).trim();
+    if (text === '') return null;
+    const num = Number(text);
+    return Number.isNaN(num) ? null : num;
+  }
+
+  function valueText(v: VoucherDto): string {
+    return v.type === 'percent' ? `${v.value}%` : formatIDR(v.value);
+  }
+
+  function renderVoucherCard(v: VoucherDto): string {
+    const usage = v.maxUses === null ? `${v.usedCount}×` : `${v.usedCount}/${v.maxUses}×`;
+    return `
+      <div class="voucher-card card" data-id="${v.id}">
+        <div class="option-head">
+          <h4><span class="voucher-code">${escapeHtml(v.code)}</span>
+            ${v.isActive ? '<span class="chip chip-green">Aktif</span>' : '<span class="chip">Nonaktif</span>'}
+          </h4>
+          <div class="option-actions">
+            <button type="button" class="btn btn-sm" data-action="edit" data-id="${v.id}">Edit</button>
+            <button type="button" class="btn btn-sm btn-danger" data-action="delete" data-id="${v.id}">Hapus</button>
+          </div>
+        </div>
+
+        <div class="option-tags">
+          <span class="chip">Diskon ${escapeHtml(valueText(v))}</span>
+          ${v.minSubtotal ? `<span class="chip">Min. belanja ${formatIDR(v.minSubtotal)}</span>` : ''}
+          <span class="chip">Terpakai ${usage}</span>
+          <span class="chip">Berlaku s.d. ${formatDate(v.validUntil)}</span>
+        </div>
+
+        ${v.description ? `<p class="muted voucher-desc">${escapeHtml(v.description)}</p>` : ''}
+      </div>`;
+  }
+
+  async function loadVouchers(): Promise<void> {
+    try {
+      vouchers = await fetchVouchers();
+      if (!container) return;
+
+      if (vouchers.length === 0) {
+        container.innerHTML =
+          '<div class="card"><div class="empty-state">Belum ada voucher. Klik <strong>+ Tambah Voucher</strong> untuk membuat kode diskon.</div></div>';
+        return;
+      }
+
+      container.innerHTML = vouchers.map(renderVoucherCard).join('');
+    } catch (error) {
+      if (container) {
+        container.innerHTML = `<div class="alert alert-error">${
+          error instanceof Error ? escapeHtml(error.message) : 'Gagal memuat voucher.'
+        }</div>`;
+      }
+    }
+  }
+
+  /* ============ EDITOR ============ */
+
+  function openEditor(voucher: VoucherDto | null): void {
+    editingId = voucher ? voucher.id : null;
+    if (!editor || !editorTitle) return;
+
+    editorTitle.textContent = voucher ? `Ubah Voucher ${voucher.code}` : 'Voucher Baru';
+    editor.hidden = false;
+
+    (document.getElementById('f-code') as HTMLInputElement).value = voucher?.code || '';
+    (document.getElementById('f-description') as HTMLInputElement).value = voucher?.description || '';
+    (document.getElementById('f-type') as HTMLSelectElement).value = voucher?.type || 'percent';
+    (document.getElementById('f-value') as HTMLInputElement).value = voucher ? String(voucher.value) : '';
+    (document.getElementById('f-min-subtotal') as HTMLInputElement).value =
+      voucher?.minSubtotal != null ? String(voucher.minSubtotal) : '';
+    (document.getElementById('f-max-uses') as HTMLInputElement).value =
+      voucher?.maxUses != null ? String(voucher.maxUses) : '';
+    (document.getElementById('f-valid-until') as HTMLInputElement).value = voucher?.validUntil || '';
+    (document.getElementById('f-active') as HTMLInputElement).checked = voucher ? voucher.isActive : true;
+
+    updateValueHint();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateValueHint(): void {
+    const hint = document.getElementById('value-hint');
+    const type = (document.getElementById('f-type') as HTMLSelectElement).value;
+    const valueInput = document.getElementById('f-value') as HTMLInputElement;
+    if (hint) {
+      hint.textContent =
+        type === 'percent'
+          ? 'Persen dari subtotal produk (mis. 10 = 10%).'
+          : 'Potongan tetap dalam Rupiah (mis. 50000 = Rp 50.000).';
+    }
+    if (valueInput) {
+      valueInput.placeholder = type === 'percent' ? 'mis. 10' : 'mis. 50000';
+    }
+  }
+
+  function closeEditor(): void {
+    editingId = null;
+    if (editor) editor.hidden = true;
+  }
+
+  document.getElementById('f-type')?.addEventListener('change', updateValueHint);
+
+  document.getElementById('btn-add-voucher')?.addEventListener('click', () => openEditor(null));
+  document.getElementById('cancel-editor')?.addEventListener('click', closeEditor);
+
+  document.getElementById('save-voucher')?.addEventListener('click', async () => {
+    const code = (document.getElementById('f-code') as HTMLInputElement).value.trim();
+    const description = (document.getElementById('f-description') as HTMLInputElement).value.trim();
+    const type = (document.getElementById('f-type') as HTMLSelectElement).value as 'percent' | 'nominal';
+    const value = numOrNull((document.getElementById('f-value') as HTMLInputElement).value);
+    const minSubtotal = numOrNull((document.getElementById('f-min-subtotal') as HTMLInputElement).value);
+    const maxUses = numOrNull((document.getElementById('f-max-uses') as HTMLInputElement).value);
+    const validUntil = (document.getElementById('f-valid-until') as HTMLInputElement).value || null;
+    const isActive = (document.getElementById('f-active') as HTMLInputElement).checked;
+
+    if (!code) {
+      flash('Kode voucher wajib diisi.', 'error');
+      return;
+    }
+    if (value === null) {
+      flash('Nilai diskon wajib diisi.', 'error');
+      return;
+    }
+
+    const payload = {
+      code,
+      description: description || null,
+      type,
+      value,
+      minSubtotal,
+      maxUses,
+      validUntil,
+      isActive
+    };
+
+    const saveBtn = document.getElementById('save-voucher') as HTMLButtonElement | null;
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Menyimpan...';
+    }
+
+    try {
+      if (editingId === null) {
+        await createVoucher(payload);
+        flash('Voucher berhasil dibuat.', 'success');
+      } else {
+        await updateVoucher(editingId, payload);
+        flash('Voucher berhasil diperbarui.', 'success');
+      }
+      closeEditor();
+      await loadVouchers();
+    } catch (error) {
+      flash(error instanceof Error ? error.message : 'Gagal menyimpan voucher.', 'error');
+    } finally {
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Simpan Voucher';
+      }
+    }
+  });
+
+  /* ============ AKSI LIST ============ */
+
+  container?.addEventListener('click', async (e) => {
+    const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('[data-action]');
+    if (!btn) return;
+
+    const id = Number(btn.dataset.id);
+    const action = btn.dataset.action;
+    const voucher = vouchers.find((v) => v.id === id);
+    if (!voucher) return;
+
+    if (action === 'edit') {
+      openEditor(voucher);
+    } else if (action === 'delete') {
+      if (!window.confirm(`Hapus voucher ${voucher.code}?`)) return;
+      try {
+        await deleteVoucher(id);
+        flash('Voucher dihapus.', 'success');
+        await loadVouchers();
+      } catch (error) {
+        flash(error instanceof Error ? error.message : 'Gagal menghapus voucher.', 'error');
+      }
+    }
+  });
+
+  loadVouchers();
+</script>
+
+<style>
+  .voucher-card {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .voucher-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: 0.6px;
+    color: var(--primary-dark);
+  }
+
+  .voucher-desc {
+    padding: 8px 0 0;
+  }
+</style>

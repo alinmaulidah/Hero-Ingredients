@@ -10,6 +10,11 @@ const productRoutes = require('./routes/productRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const statsRoutes = require('./routes/statsRoutes');
+const customerRoutes = require('./routes/customerRoutes');
+const shippingRoutes = require('./routes/shippingRoutes');
+const voucherRoutes = require('./routes/voucherRoutes');
+const contactRoutes = require('./routes/contactRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 
@@ -30,8 +35,16 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/customers', customerRoutes); // register/login/me + buku alamat pelanggan
+app.use('/api/shipping-options', shippingRoutes); // opsi kurir
+app.use('/api/vouchers', voucherRoutes); // voucher/diskon
+app.use('/api/contact', contactRoutes); // form kontak publik + pesan masuk admin
+app.use('/api/uploads', uploadRoutes); // unggah gambar produk (admin)
 app.use('/api', paymentRoutes); // POST /api/charge, POST /api/payment/notification
 app.use('/api', statsRoutes); // GET /api/stats
+
+// Gambar hasil unggah admin (dibuat saat runtime oleh uploadRoutes).
+app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 
 // Test API
 app.get('/api', (req, res) => {

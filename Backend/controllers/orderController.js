@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const { sendTelegramMessage } = require('../utils/telegram');
 
 const parseId = (value) => {
   const id = Number(value);
@@ -7,14 +8,34 @@ const parseId = (value) => {
 
 const ORDER_STATUSES = ['pending', 'processed', 'shipped', 'completed', 'cancelled'];
 
+const ORDER_STATUS_LABELS = {
+  pending: 'Pending',
+  processed: 'Diproses',
+  shipped: 'Dikirim',
+  completed: 'Selesai',
+  cancelled: 'Dibatalkan'
+};
+
 const mapOrderRow = (row) => ({
   id: row.id,
   orderId: row.order_id,
   grossAmount: row.gross_amount,
   currency: row.currency,
+  customerId: row.customer_id,
   customerName: row.customer_name,
   customerEmail: row.customer_email,
   customerPhone: row.customer_phone,
+  shippingName: row.shipping_name,
+  shippingPhone: row.shipping_phone,
+  shippingAddress: row.shipping_address,
+  shippingCity: row.shipping_city,
+  shippingProvince: row.shipping_province,
+  shippingPostalCode: row.shipping_postal_code,
+  shippingCountry: row.shipping_country,
+  courierName: row.courier_name,
+  shippingCost: row.shipping_cost,
+  voucherCode: row.voucher_code,
+  discountAmount: row.discount_amount,
   transactionStatus: row.transaction_status,
   orderStatus: row.order_status,
   paymentType: row.payment_type,
@@ -72,7 +93,11 @@ const getOrders = async (req, res) => {
     const where = clauses.length > 0 ? `WHERE ${clauses.join(' AND ')}` : '';
     const [rows] = await db.query(
       `SELECT o.id, o.order_id, o.gross_amount, o.currency,
-              o.customer_name, o.customer_email, o.customer_phone,
+              o.customer_id, o.customer_name, o.customer_email, o.customer_phone,
+              o.shipping_name, o.shipping_phone, o.shipping_address,
+              o.shipping_city, o.shipping_province, o.shipping_postal_code,
+              o.shipping_country, o.courier_name, o.shipping_cost,
+              o.voucher_code, o.discount_amount,
               o.transaction_status, o.order_status, o.payment_type, o.created_at
          FROM orders o
         ${where}
@@ -100,7 +125,11 @@ const getOrderById = async (req, res) => {
 
     const [rows] = await db.query(
       `SELECT id, order_id, gross_amount, currency,
-              customer_name, customer_email, customer_phone,
+              customer_id, customer_name, customer_email, customer_phone,
+              shipping_name, shipping_phone, shipping_address,
+              shipping_city, shipping_province, shipping_postal_code,
+              shipping_country, courier_name, shipping_cost,
+              voucher_code, discount_amount,
               transaction_status, order_status, payment_type, created_at
          FROM orders WHERE id = ?`,
       [id]
@@ -138,7 +167,11 @@ const updateOrderStatus = async (req, res) => {
 
     const [rows] = await db.query(
       `SELECT id, order_id, gross_amount, currency,
-              customer_name, customer_email, customer_phone,
+              customer_id, customer_name, customer_email, customer_phone,
+              shipping_name, shipping_phone, shipping_address,
+              shipping_city, shipping_province, shipping_postal_code,
+              shipping_country, courier_name, shipping_cost,
+              voucher_code, discount_amount,
               transaction_status, order_status, payment_type, created_at
          FROM orders WHERE id = ?`,
       [id]
@@ -147,7 +180,24 @@ const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order tidak ditemukan' });
     }
 
-    res.json({ success: true, data: mapOrderRow(rows[0]) });
+    const order = rows[0];
+
+    // Notifikasi Telegram: status pesanan berubah (dari panel admin).
+    try {
+      await sendTelegramMessage(
+        [
+          '🔄 STATUS PESANAN DIPERBARUI',
+          `Order: ${order.order_id}`,
+          `Status baru: ${ORDER_STATUS_LABELS[status] || status}`,
+          `Customer: ${order.customer_name || '-'}`,
+          `Total: Rp ${Number(order.gross_amount || 0).toLocaleString('id-ID')}`
+        ].join('\n')
+      );
+    } catch (error) {
+      console.error('Telegram order status notification error:', error);
+    }
+
+    res.json({ success: true, data: mapOrderRow(order) });
   } catch (error) {
     console.error('Update order status error:', error);
     res.status(500).json({ success: false, message: 'Gagal memperbarui status order' });

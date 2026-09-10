@@ -1,6 +1,6 @@
 const express = require('express');
 
-const { protect } = require('../middleware/authMiddleware');
+const { protectAdmin } = require('../middleware/authMiddleware');
 const {
   getProducts,
   getProductById,
@@ -22,16 +22,16 @@ router.get('/', getProducts);
 router.get('/:id', getProductById);
 
 // Admin (JWT)
-router.post('/', protect, createProduct);
-router.put('/:id', protect, updateProduct);
-router.delete('/:id', protect, deleteProduct);
+router.post('/', protectAdmin, createProduct);
+router.put('/:id', protectAdmin, updateProduct);
+router.delete('/:id', protectAdmin, deleteProduct);
 
-router.post('/:groupId/options', protect, createOption);
-router.put('/:groupId/options/:optionId', protect, updateOption);
-router.delete('/:groupId/options/:optionId', protect, deleteOption);
+router.post('/:groupId/options', protectAdmin, createOption);
+router.put('/:groupId/options/:optionId', protectAdmin, updateOption);
+router.delete('/:groupId/options/:optionId', protectAdmin, deleteOption);
 
-router.post('/:groupId/options/:optionId/variants', protect, createVariant);
-router.put('/:groupId/options/:optionId/variants/:variantId', protect, updateVariant);
-router.delete('/:groupId/options/:optionId/variants/:variantId', protect, deleteVariant);
+router.post('/:groupId/options/:optionId/variants', protectAdmin, createVariant);
+router.put('/:groupId/options/:optionId/variants/:variantId', protectAdmin, updateVariant);
+router.delete('/:groupId/options/:optionId/variants/:variantId', protectAdmin, deleteVariant);
 
 module.exports = router;
