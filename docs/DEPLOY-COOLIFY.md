@@ -268,6 +268,13 @@ menyimpan password admin di env (akun admin tetap ada di database).
 **Build gagal: `COPY Frontend/... not found`**
 → **Base Directory** belum `/`. Ubah ke `/` (langkah 3).
 
+**Build gagal: `Cannot find native binding` / `rolldown-binding.wasi.cjs` pada `RUN npm run build`**
+→ `package-lock.json` Frontend dibuat di Windows sehingga binding native Linux
+(rolldown, lightningcss) tidak tercatat di dalamnya; `npm ci` hanya mengikuti
+lockfile jadi binding-nya tidak terpasang. Dockerfile sudah menangani ini dengan
+resolve ulang di dalam image Linux (`rm -f package-lock.json && npm install`).
+Pastikan perubahan Dockerfile ini sudah ter-push, lalu **Deploy** ulang.
+
 **Deploy sukses tapi situs menampilkan 502 / Bad Gateway**
 → Port salah. Pastikan **Ports Exposes = 8080** dan **Domain Port = 8080**.
 

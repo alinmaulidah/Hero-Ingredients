@@ -3,7 +3,7 @@
 # Backend Express yang sekaligus menyajikan website + /admin + /api.
 #
 # Build dari root repo (konteks berisi Frontend & Backend):
-#   docker build -f Backend/Dockerfile -t hero-ingredients 
+#   docker build -f Backend/Dockerfile -t hero-ingredients .
 #
 # Jalankan (isi env DB, JWT_SECRET, kunci Midtrans saat run):
 #   docker run -p 8080:8080 --env-file Backend/.env hero-ingredients
@@ -29,7 +29,12 @@ ENV PUBLIC_MIDTRANS_IS_PRODUCTION=$PUBLIC_MIDTRANS_IS_PRODUCTION
 ENV PUBLIC_GOOGLE_CLIENT_ID=$PUBLIC_GOOGLE_CLIENT_ID
 
 COPY Frontend/package*.json ./
-RUN npm ci
+# package-lock.json dibuat di Windows, sehingga binding native Linux tidak
+# tercatat di dalamnya (mis. @rolldown/binding-linux-x64-musl, lightningcss)
+# — ini bug npm optional dependencies (npm/cli#4828). npm ci hanya mengikuti
+# lockfile, jadi binding-nya tidak terpasang dan `astro build` gagal dengan
+# "Cannot find native binding". Resolve ulang di dalam image Linux ini.
+RUN rm -f package-lock.json && npm install
 
 COPY Frontend/ ./
 RUN npm run build
