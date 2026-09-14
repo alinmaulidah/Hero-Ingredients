@@ -1,0 +1,63 @@
+# Compose khusus UJI LOKAL sebelum deploy ke Coolify.
+# Menjalankan satu container app (Backend/Dockerfile: Astro + API + /admin)
+# plus MySQL 8, agar bisa dipastikan image-nya jalan.
+#
+#   docker compose up --build
+#   buka http://localhost:8080  (website, /admin/login, /api)
+#
+# Butuh file Backend/.env (salin dari Backend/.env.example lalu isi JWT_SECRET,
+# MIDTRANS_SERVER_KEY, dll). Nilai DB_* & PORT di bawah menimpa isi file itu.
+#
+# Di Coolify jalur yang dipakai adalah resource MySQL + Application Dockerfile,
+# bukan file ini.
+name: hero-ingredients
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+      args:
+        PUBLIC_API_BASE: ""
+        PUBLIC_MIDTRANS_CLIENT_KEY: ${PUBLIC_MIDTRANS_CLIENT_KEY:-}
+        PUBLIC_MIDTRANS_IS_PRODUCTION: ${PUBLIC_MIDTRANS_IS_PRODUCTION:-false}
+        PUBLIC_GOOGLE_CLIENT_ID: ${PUBLIC_GOOGLE_CLIENT_ID:-}
+    image: hero-ingredients:local
+    restart: unless-stopped
+    env_file:
+      - Backend/.env
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_USER: root
+      DB_PASSWORD: root_secret
+      DB_NAME: magna_ingredients
+      PORT: "8080"
+      SERVE_FRONTEND: /app/frontend-dist
+      RUN_MIGRATIONS: "true"
+      SEED_CATALOG: "true"
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secret
+      MYSQL_DATABASE: magna_ingredients
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot_secret"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  uploads:
+  mysql-data:

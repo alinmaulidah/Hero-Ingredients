@@ -1,10 +1,10 @@
 # Step 1: Build Astro site
-FROM node:lts-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 
 # Copy dependency files
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Copy rest of the files and build
 COPY . .

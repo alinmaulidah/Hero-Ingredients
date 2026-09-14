@@ -41,6 +41,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV SERVE_FRONTEND=/app/frontend-dist
 ENV PORT=8080
+# Default aman: migrasi/seed otomatis hanya bila diaktifkan lewat env
+# (Coolify: set RUN_MIGRATIONS=true pada deploy pertama).
+ENV RUN_MIGRATIONS=false
 
 COPY Backend/package*.json ./
 RUN npm ci --omit=dev
@@ -50,8 +53,12 @@ COPY --from=frontend-build /app/frontend/dist /app/frontend-dist
 
 # Gambar hasil upload admin disimpan di sini — pasang volume persisten
 # (Coolify: Persistent Storage → /app/uploads) agar tidak hilang saat redeploy.
-RUN mkdir -p /app/uploads
+RUN mkdir -p /app/uploads && chmod +x ./docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["node", "server.js"]
+# Health check: endpoint /api membalas {"success":true,...}
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:8080/api || exit 1
+
+CMD ["sh", "docker-entrypoint.sh"]

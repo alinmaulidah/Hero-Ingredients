@@ -6,7 +6,7 @@
  * document/window. Semua nilai yang disisipkan di-escape.
  */
 
-import { PLACEHOLDER_IMAGE, type CatalogGroup } from './catalogData';
+import { PLACEHOLDER_IMAGE, resolveImageUrl, type CatalogGroup } from './catalogData';
 
 export function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -38,7 +38,7 @@ function formatIDR(value: number): string {
 }
 
 /** Satu kartu produk (satu grup = bahan yang sama, beberapa jenis olahan). */
-export function buildCardHtml(group: CatalogGroup): string {
+export function buildCardHtml(group: CatalogGroup, apiBase = ''): string {
   const options = group.options || [];
   const first = options[0];
   const groupId = escapeHtml(group.id);
@@ -75,7 +75,7 @@ export function buildCardHtml(group: CatalogGroup): string {
     .map(
       (opt, index) => `
                   <img
-                    src="${escapeHtml(opt.imageUrl || PLACEHOLDER_IMAGE)}"
+                    src="${escapeHtml(resolveImageUrl(opt.imageUrl || PLACEHOLDER_IMAGE, apiBase))}"
                     alt="${escapeHtml(opt.name)}"
                     class="product-image option-image ${index === 0 ? 'active' : ''}"
                     data-option-image="${escapeHtml(opt.id)}"
@@ -209,8 +209,8 @@ ${CART_ICON_SVG}
             </div>`;
 }
 
-export function buildGridHtml(groups: CatalogGroup[]): string {
-  return groups.map((group) => buildCardHtml(group)).join('\n');
+export function buildGridHtml(groups: CatalogGroup[], apiBase = ''): string {
+  return groups.map((group) => buildCardHtml(group, apiBase)).join('\n');
 }
 
 /** Pill filter kategori. `categories` sudah termasuk 'All' di depan. */

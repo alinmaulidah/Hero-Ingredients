@@ -5,4 +5,6 @@
 .git
 .commandcode
 **/.env
+**/.env.*
+**/uploads
 *.log

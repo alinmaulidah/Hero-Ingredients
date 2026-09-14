@@ -1,0 +1,6 @@
+# Normalisasi line-ending agar skrip shell & Dockerfile tetap LF
+# walau dikerjakan di Windows (penting untuk build di Linux/Coolify).
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf

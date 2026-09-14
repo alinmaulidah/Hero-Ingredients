@@ -9,18 +9,6 @@
 
 const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
 
-/**
- * Jadikan path relatif backend (mis. /uploads/foto.jpg) menjadi URL lengkap
- * sesuai PUBLIC_API_BASE. URL absolut/data/blob dibiarkan apa adanya.
- */
-export function resolveApiUrl(path: string): string {
-  if (!path) return path;
-  if (/^(https?:)?\/\//i.test(path) || path.startsWith('data:') || path.startsWith('blob:')) {
-    return path;
-  }
-  return `${API_BASE}${path}`;
-}
-
 export const TOKEN_KEY = 'hero_admin_token';
 export const USER_KEY = 'hero_admin_user';
 

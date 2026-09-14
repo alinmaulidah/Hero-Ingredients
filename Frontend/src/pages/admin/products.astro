@@ -41,6 +41,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
 <script>
   import { escapeHtml } from '../../lib/catalogHtml';
+  import { resolveImageUrl } from '../../lib/catalogData';
   import {
     createGroup,
     updateGroup,
@@ -53,12 +54,13 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
     deleteVariant,
     fetchProducts,
     uploadProductImage,
-    resolveApiUrl,
     type ProductGroupDto,
     type ProductOptionDto,
     type ProductVariantDto
   } from '../../lib/admin/api';
   import { priceFromIDR, type ForeignCurrency } from '../../lib/currency';
+
+  const API_BASE = (import.meta.env.PUBLIC_API_BASE || '').replace(/\/$/, '');
 
   const groupsContainer = document.getElementById('groups-container');
   const flashEl = document.getElementById('flash');
@@ -316,7 +318,7 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
                 data-image-preview
                 src="${
                   option && option.imageUrl
-                    ? escapeHtml(resolveApiUrl(option.imageUrl))
+                    ? escapeHtml(resolveImageUrl(option.imageUrl, API_BASE))
                     : '/images/products/placeholder.svg'
                 }"
                 alt="Pratinjau gambar"
@@ -639,9 +641,8 @@ import AdminLayout from '../../layouts/AdminLayout.astro';
 
     try {
       const { url } = await uploadProductImage(file);
-      const fullUrl = resolveApiUrl(url);
-      if (urlInput) urlInput.value = fullUrl;
-      if (preview) preview.src = fullUrl;
+      if (urlInput) urlInput.value = url;
+      if (preview) preview.src = resolveImageUrl(url, API_BASE);
       if (status) status.textContent = 'Gambar terunggah.';
     } catch (error) {
       if (status) status.textContent = '';

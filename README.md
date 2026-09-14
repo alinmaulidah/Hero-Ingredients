@@ -95,6 +95,30 @@ docker build -f Backend/Dockerfile -t hero-ingredients .
 docker run -p 8080:8080 --env-file Backend/.env hero-ingredients
 ```
 
+### Deploy ke Coolify (hosting)
+
+Panduan langkah demi langkah (klik demi klik di UI Coolify) ada di
+**[`docs/DEPLOY-COOLIFY.md`](docs/DEPLOY-COOLIFY.md)**.
+
+Ringkasnya: buat resource **MySQL** di Coolify, lalu buat **Application** dari
+repo GitHub ini dengan:
+
+- **Build Pack**: `Dockerfile`
+- **Base Directory**: `/` (root repo — karena Dockerfile membangun Frontend & Backend)
+- **Dockerfile Location**: `/Backend/Dockerfile`
+- **Ports Exposes**: `8080`
+- **Persistent Storage**: mount ke `/app/uploads` (agar gambar upload tidak hilang saat redeploy)
+
+Rahasia (`DB_*`, `JWT_SECRET`, `MIDTRANS_*`, `TELEGRAM_*`, `GOOGLE_CLIENT_ID`)
+diisi lewat Environment Variables Coolify, sedangkan nilai `PUBLIC_*` harus
+diisi sebagai **Build Variables** (ditanam saat `npm run build`).
+
+Untuk uji lokal sebelum deploy:
+
+```sh
+docker compose up --build   # http://localhost:8080
+```
+
 ### Variabel Lingkungan
 
 | File | Variabel | Keterangan |
@@ -106,6 +130,10 @@ docker run -p 8080:8080 --env-file Backend/.env hero-ingredients
 | `Backend/.env` | `PORT` | Port HTTP (default 5000) |
 | `Frontend/.env` | `PUBLIC_API_BASE` | Base URL API; **kosongkan** saat same-origin |
 | `Frontend/.env` | `PUBLIC_MIDTRANS_CLIENT_KEY` | Client key Midtrans (dikirim ke browser) |
+| `Frontend/.env` | `PUBLIC_MIDTRANS_IS_PRODUCTION`, `PUBLIC_GOOGLE_CLIENT_ID` | Mode Midtrans & Client ID Google (ditanam saat build) |
+| `Backend/.env` | `GOOGLE_CLIENT_ID` | Client ID Google untuk verifikasi login pelanggan |
+| `Backend/.env` | `RUN_MIGRATIONS`, `SEED_CATALOG` | Jalankan `db:schema` / `seed:catalog` otomatis saat container start |
+| `Backend/.env` | `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME` | Buat/perbarui akun admin otomatis saat container start |
 
 ## Script Backend
 

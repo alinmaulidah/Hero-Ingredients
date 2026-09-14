@@ -16,7 +16,7 @@ async function main() {
   });
 
   const [tables] = await conn.query(
-    `SELECT table_name
+    `SELECT table_name AS tableName
        FROM information_schema.tables
       WHERE table_schema = ?
       ORDER BY table_name`,
@@ -29,9 +29,9 @@ async function main() {
     return;
   }
 
-  for (const { TABLE_NAME: table } of tables) {
+  for (const { tableName: table } of tables) {
     const [columns] = await conn.query(
-      `SELECT column_name, column_type, is_nullable
+      `SELECT column_name AS columnName, column_type AS columnType, is_nullable AS isNullable
          FROM information_schema.columns
         WHERE table_schema = ? AND table_name = ?
         ORDER BY ordinal_position`,
@@ -49,7 +49,7 @@ async function main() {
     console.log(`\n== ${table} (${count} baris) ==`);
     for (const col of columns) {
       console.log(
-        `  ${col.COLUMN_NAME}  ${col.COLUMN_TYPE}${col.IS_NULLABLE === 'NO' ? ' NOT NULL' : ''}`
+        `  ${col.columnName}  ${col.columnType}${col.isNullable === 'NO' ? ' NOT NULL' : ''}`
       );
     }
   }

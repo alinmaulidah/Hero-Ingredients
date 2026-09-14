@@ -13,6 +13,20 @@ import type { ProductGroup } from '../data/products';
 
 export const PLACEHOLDER_IMAGE = '/images/products/placeholder.svg';
 
+/**
+ * URL gambar untuk ditampilkan.
+ * - Berkas unggahan admin disimpan relatif (`/uploads/...`) agar tidak terikat
+ *   ke host tertentu; hanya path ini yang perlu ditempel API base.
+ * - Aset frontend (`/images/...`) dibiarkan apa adanya karena dilayani Astro.
+ * - URL absolut/`data:`/`blob:` tidak diubah.
+ */
+export function resolveImageUrl(path: string | null | undefined, apiBase = ''): string {
+  const value = String(path ?? '');
+  if (!value) return value;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value) || value.startsWith('//')) return value;
+  return value.startsWith('/uploads/') ? `${apiBase}${value}` : value;
+}
+
 export interface CatalogVariant {
   size: string;
   priceIDR: number;
