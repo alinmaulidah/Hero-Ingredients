@@ -3,7 +3,7 @@
 # Backend Express yang sekaligus menyajikan website + /admin + /api.
 #
 # Build dari root repo (konteks berisi Frontend & Backend):
-#   docker build -f Backend/Dockerfile -t hero-ingredients .
+#   docker build -f Backend/Dockerfile -t hero-ingredients 
 #
 # Jalankan (isi env DB, JWT_SECRET, kunci Midtrans saat run):
 #   docker run -p 8080:8080 --env-file Backend/.env hero-ingredients
