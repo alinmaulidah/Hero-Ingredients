@@ -10,7 +10,7 @@
 #
 # Di Coolify jalur yang dipakai adalah resource MySQL + Application Dockerfile,
 # bukan file ini.
-name: hero-ingredients
+name: indonesia-ingredients
 
 services:
   app:
@@ -22,7 +22,7 @@ services:
         PUBLIC_MIDTRANS_CLIENT_KEY: ${PUBLIC_MIDTRANS_CLIENT_KEY:-}
         PUBLIC_MIDTRANS_IS_PRODUCTION: ${PUBLIC_MIDTRANS_IS_PRODUCTION:-false}
         PUBLIC_GOOGLE_CLIENT_ID: ${PUBLIC_GOOGLE_CLIENT_ID:-}
-    image: hero-ingredients:local
+    image: indonesia-ingredients:local
     restart: unless-stopped
     env_file:
       - Backend/.env

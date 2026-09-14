@@ -63,7 +63,7 @@ async function main() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       chat_id: chatId,
-      text: '✅ Tes notifikasi Telegram berhasil!\nServer Hero Ingredients siap mengirim notifikasi pembayaran ke sini.'
+      text: '✅ Tes notifikasi Telegram berhasil!\nServer Indonesia Ingredients siap mengirim notifikasi pembayaran ke sini.'
     })
   });
 

@@ -1,5 +1,5 @@
 -- ============================================================
--- Hero Ingredients — Schema Backend (Express/MySQL)
+-- Indonesia Ingredients — Schema Backend (Express/MySQL)
 -- Idempotent: pakai IF NOT EXISTS, aman dijalankan berulang.
 -- Jalankan lewat `npm run db:schema` di folder Backend/.
 -- Tabel lama `products` (jika ada) TIDAK disentuh.
@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS vouchers (
 -- nilai yang dibayar ke Midtrans)
 CREATE TABLE IF NOT EXISTS orders (
   id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  order_id VARCHAR(40) NOT NULL COMMENT 'ID publik Midtrans, format HERO-<timestamp>-<rand>',
+  order_id VARCHAR(40) NOT NULL COMMENT 'ID publik Midtrans, format INDONESIA-<timestamp>-<rand>',
   gross_amount INT NOT NULL DEFAULT 0 COMMENT 'subtotal + ongkir - diskon (Rupiah)',
   currency CHAR(3) NOT NULL DEFAULT 'IDR',
   customer_id INT UNSIGNED NULL COMMENT 'FK ke customers.id (akun pelanggan)',

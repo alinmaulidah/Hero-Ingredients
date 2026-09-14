@@ -1,6 +1,6 @@
-# Panduan Deploy ke Coolify — Hero Ingredients
+# Panduan Deploy ke Coolify — Indonesia Ingredients
 
-Panduan ini untuk **deploy pertama** website Hero Ingredients ke Coolify
+Panduan ini untuk **deploy pertama** website Indonesia Ingredients ke Coolify
 (server self-hosted). Pola yang dipakai adalah **satu container**:
 `Backend/Dockerfile` membangun Frontend Astro lalu menjalankannya lewat
 Express, sehingga website, panel `/admin`, dan `/api` berada di **satu domain**
@@ -27,7 +27,7 @@ Ikuti berurutan. Tiap langkah ditulis dengan nama tombol/menu di UI Coolify.
 
 1. Login Coolify.
 2. Menu kiri **Projects** → klik **+ Add**.
-3. Isi **Name**: `Hero Ingredients` → **Create**.
+3. Isi **Name**: `Indonesia Ingredients` → **Create**.
 
 Semua resource (database + aplikasi) dibuat di dalam project ini.
 
@@ -35,10 +35,10 @@ Semua resource (database + aplikasi) dibuat di dalam project ini.
 
 ## 2. Buat Database MySQL
 
-1. Masuk ke project `Hero Ingredients`.
+1. Masuk ke project `Indonesia Ingredients`.
 2. Klik **+ New** (kanan atas) → pilih **Database** → **MySQL**.
 3. Isi:
-   - **Name**: `hero-mysql`
+   - **Name**: `indonesia-mysql`
    - **Server**: pilih server Coolify milikmu
 4. Klik **Create**.
 5. Setelah terbuka, buka tab **General** (atau **Configuration**), lalu isi:
@@ -48,7 +48,7 @@ Semua resource (database + aplikasi) dibuat di dalam project ini.
    - **MySQL Root Password**: generate, simpan juga
 6. Klik **Save** lalu **Start** (atau **Deploy**). Tunggu statusnya **Running/Healthy**.
 7. Catat 3 hal dari halaman ini untuk langkah 4 nanti:
-   - **Internal Hostname** (contoh: `hero-mysql-abc123`) → jadi nilai `DB_HOST`
+   - **Internal Hostname** (contoh: `indonesia-mysql-abc123`) → jadi nilai `DB_HOST`
    - **MySQL User** → `hero`
    - **MySQL Password** → password yang tadi digenerate
    - Port internal selalu `3306`
@@ -89,7 +89,7 @@ Klik **+ Add** untuk tiap baris di bawah. Isi kolom **Key** dan **Value**.
 
 | Key | Value | Keterangan |
 |---|---|---|
-| `DB_HOST` | Internal Hostname dari langkah 2 (mis. `hero-mysql-abc123`) | Jangan `localhost` |
+| `DB_HOST` | Internal Hostname dari langkah 2 (mis. `indonesia-mysql-abc123`) | Jangan `localhost` |
 | `DB_PORT` | `3306` | |
 | `DB_USER` | `hero` | dari langkah 2 |
 | `DB_PASSWORD` | password MySQL dari langkah 2 | |
@@ -165,7 +165,7 @@ Klik **Save**.
 1. Masih di halaman Application → tab **Storages** (atau **Persistent Storage**).
 2. Klik **+ Add** / **Add Volume**.
 3. Isi **Destination Path**: `/app/uploads` → **Save**.
-   Volume boleh tanpa Name (Docker volume otomatis) atau diisi `hero-uploads`.
+   Volume boleh tanpa Name (Docker volume otomatis) atau diisi `indonesia-uploads`.
 
 Tanpa langkah ini, gambar produk yang diunggah dari panel admin **akan hilang**
 setiap kali redeploy.
@@ -211,7 +211,7 @@ Buka di browser:
 
 1. `https://<domain>/` → halaman utama tampil.
 2. `https://<domain>/api` → harus muncul
-   `{"success":true,"message":"Hero API is running"}`.
+   `{"success":true,"message":"Indonesia Ingredients API is running"}`.
 3. `https://<domain>/products` → katalog tampil (datanya dari database).
 4. `https://<domain>/admin/login` → login pakai `ADMIN_EMAIL` + `ADMIN_PASSWORD`
    dari langkah 4.

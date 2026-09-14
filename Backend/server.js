@@ -50,7 +50,7 @@ app.use('/uploads', express.static(path.resolve(__dirname, 'uploads')));
 app.get('/api', (req, res) => {
   res.json({
     success: true,
-    message: 'Hero API is running'
+    message: 'Indonesia Ingredients API is running'
   });
 });
 

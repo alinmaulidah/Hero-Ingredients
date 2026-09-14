@@ -1,4 +1,4 @@
-# Company Profile — Hero Ingredients
+# Company Profile — Indonesia Ingredients
 
 Website company profile + katalog & belanja (Astro) + API & panel admin (Express/MySQL + Midtrans).
 
@@ -91,8 +91,8 @@ port/domain (website & admin ikut ter-deploy bersama API).
 
 Atau pakai Docker (build dari root repo):
 ```sh
-docker build -f Backend/Dockerfile -t hero-ingredients .
-docker run -p 8080:8080 --env-file Backend/.env hero-ingredients
+docker build -f Backend/Dockerfile -t indonesia-ingredients .
+docker run -p 8080:8080 --env-file Backend/.env indonesia-ingredients
 ```
 
 ### Deploy ke Coolify (hosting)

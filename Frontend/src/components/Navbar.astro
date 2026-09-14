@@ -468,25 +468,30 @@ const { brand, nav } = company;
     }
   }
 
-  /* SMALL MOBILE */
-  @media (max-width: 420px) {
+  /* SMALL MOBILE — brand "INDONESIA INGREDIENTS" lebih panjang dari sebelumnya,
+     jadi logo & tombol kanan dirapatkan agar semua elemen tetap masuk layar. */
+  @media (max-width: 480px) {
     .container {
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: 12px;
+      padding-right: 12px;
     }
 
     .logo-main,
     .logo-sub {
-      font-size: 13px;
-      letter-spacing: 0.8px;
+      font-size: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .nav-logo {
+      gap: 4px;
     }
 
     .nav-actions {
-      gap: 6px;
+      gap: 5px;
     }
 
     .lang-btn {
-      padding: 4px 6px;
+      padding: 3px 5px;
     }
 
     .lang-code {
@@ -494,24 +499,33 @@ const { brand, nav } = company;
     }
 
     .flag-img {
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
     }
 
     .hamburger {
-      width: 25px;
-      height: 20px;
+      width: 24px;
+      height: 19px;
     }
 
     .nav-auth-btn {
       height: 32px;
-      padding: 0 12px;
+      padding: 0 10px;
       font-size: 12px;
     }
 
     .nav-menu {
       width: 82%;
       padding: 20px 18px;
+    }
+  }
+
+  /* LAYAR SANGAT KECIL */
+  @media (max-width: 380px) {
+    .logo-main,
+    .logo-sub {
+      font-size: 10.5px;
+      letter-spacing: 0.2px;
     }
   }
 </style>

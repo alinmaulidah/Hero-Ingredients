@@ -1,7 +1,7 @@
 // Simulasi webhook Midtrans: menandai sebuah order sebagai "sudah dibayar"
 // lewat jalur resmi /api/payment/notification (signature dihitung sendiri).
 // Berguna untuk mengetes dashboard admin tanpa pembayaran sungguhan.
-// Jalankan: npm run simulate:payment -- --order MAGNA-1234-567 [--status settlement]
+// Jalankan: npm run simulate:payment -- --order INDONESIA-1234-567 [--status settlement]
 require('dotenv').config();
 
 const crypto = require('crypto');

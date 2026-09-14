@@ -20,11 +20,6 @@ See [environment/taste.md](environment/taste.md)
 # e-commerce
 See [e-commerce/taste.md](e-commerce/taste.md)
 # ui / branding
-- Expects brand/logo text to be rendered identically across all components: the footer must show "HERO INGREDIENTS" in all caps exactly like the navbar — including whitespace fidelity ("HERO INGREDIENTS", not "HEROINGREDIENTS") — and rejects cosmetic restyling of brand text in one spot (e.g., title-casing or losing the space between logo words) that diverges from the established display elsewhere. Confidence: 0.7
-- Keeps the footer "Hubungi Kami" contact block lean: explicitly wants the website URL line removed and the phone number shown as the WhatsApp number — no separate Web entry and no duplicated Telp/WA lines in user-facing contact content. Confidence: 0.5
-- Prefers single-purpose public pages to stay lean and open directly with their functional content: the contact page should show only the contact details + map (plus the working form), explicitly removing the decorative big hero banner from the top of it. Confidence: 0.55
-- Cares about polish of storefront/auth-page interactions: complained the Masuk↔Daftar tab switching felt jumpy/rough and the flow was confusing — expects smooth state transitions (fade + slight slide, no layout jumping, autofocus on the first field) and sensible redirects (only send to checkout when arriving from a buy button; otherwise land back on the catalog, not an empty checkout). Also explicitly verifies tab behavior afterwards: when "Masuk" is active only the login form may be visible, and switching to "Daftar" must hide it entirely — inactive panels must be truly hidden (display:none), not left visible under/next to the active one. Confidence: 0.65
-- Expects key account actions to be surfaced as a clearly visible button, not a thin link: requested a proper pill-style "Masuk" button in the navbar (desktop and mobile) that turns into "Keluar" and logs out when a customer session exists. Confidence: 0.55
-
+See [ui-/-branding/taste.md](ui-/-branding/taste.md)
 # documentation
 - For technical setup/deployment instructions, prefers a dedicated markdown file under `docs/` with a short pointer section in `README.md`, rather than README-only instructions or a `.docx` (Word is reserved for reporting the project up to a superior) — the guide should be click-by-click for someone new to infra and include a troubleshooting section. Confidence: 0.5

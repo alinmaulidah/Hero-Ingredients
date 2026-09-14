@@ -14,13 +14,13 @@
 export const company = {
   /** Nama brand yang tampil di logo & halaman */
   brand: {
-    // verifikasi: sebelumnya "HERO INGREDIENTS" (Navbar) vs "Hero Ingredients" (Footer).
-    // Dipilih "Hero Ingredients" karena konsisten: DB magna_ingredients, order id "MAGNA-*",
-    // pesan API "MAGNA API", dan logo footer.
-    siteName: 'Hero Ingredients',
-    logoMain: 'HERO',
+    // Satu-satunya sumber brand untuk Navbar, Footer, judul halaman, dan panel
+    // admin. Logo dibagi dua bagian (logoMain + logoSub) dan selalu tampil
+    // dengan satu spasi di antaranya.
+    siteName: 'Indonesia Ingredients',
+    logoMain: 'INDONESIA',
     logoSub: 'INGREDIENTS',
-    ariaLabel: 'Hero Ingredients',
+    ariaLabel: 'Indonesia Ingredients',
 
     /** Nama badan hukum */
     // verifikasi: dipakai di pesan default WhatsApp (WhatsAppButton) & konteks legal.
@@ -35,10 +35,9 @@ export const company = {
   /** Info kontak */
   contact: {
     // Email resmi yang dipakai di footer, halaman kontak, dsb.
-    email: 'info@heroingredient.com',
-    // verifikasi: typo "magnaingridients.com" di Footer lama diperbaiki. Cek juga apakah domain
-    // asli = indonesiaingredient.com (astro.config.mjs) atau magnaingredients.com.
-    website: 'magnaingredients.com',
+    email: 'info@indonesiaingredient.com',
+    // Domain resmi — samakan dengan `site` di astro.config.mjs.
+    website: 'indonesiaingredient.com',
     phoneDisplay: '+62 21 8459 1234',
     whatsappDisplay: '+62 823 451 417',
     /** Format internasional tanpa "+" / spasi, untuk https://wa.me/ */
@@ -79,7 +78,7 @@ export const company = {
 
   /** Meta default (dipakai Layout bila halaman tidak mengirim title) */
   meta: {
-    defaultTitle: 'Hero Ingredients - Natural Raw Materials',
+    defaultTitle: 'Indonesia Ingredients - Natural Raw Materials',
   },
 };
 

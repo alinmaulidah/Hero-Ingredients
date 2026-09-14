@@ -36,7 +36,7 @@ const sanitizeItems = (items) => {
 };
 
 const generateOrderId = () =>
-  `HERO-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+  `INDONESIA-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
 const badRequest = (message) => {
   const error = new Error(message);
