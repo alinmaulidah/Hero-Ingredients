@@ -62,8 +62,9 @@ RUN mkdir -p /app/uploads && chmod +x ./docker-entrypoint.sh
 
 EXPOSE 8080
 
-# Health check: endpoint /api membalas {"success":true,...}
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:8080/api || exit 1
+# Health check: port mengikuti $PORT agar selalu sama dengan port aplikasi
+# (Coolify bisa mengisi PORT / "Ports Exposes" sendiri).
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD ["sh", "-c", "wget -qO- \"http://127.0.0.1:${PORT:-8080}/api\" || exit 1"]
 
 CMD ["sh", "docker-entrypoint.sh"]

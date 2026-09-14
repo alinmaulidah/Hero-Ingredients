@@ -13,13 +13,17 @@ const pool = require('mysql2/promise').createPool({
   queueLimit: 0
 });
 
+const DB_TARGET = `${process.env.DB_HOST || 'localhost'}:${Number(process.env.DB_PORT) || 3306}`;
+
 pool.getConnection()
   .then(connection => {
-    console.log('MySQL berhasil terhubung');
+    console.log(`MySQL berhasil terhubung (${DB_TARGET})`);
     connection.release();
   })
   .catch(error => {
-    console.error('MySQL gagal terhubung:', error.message);
+    // AggregateError (mis. gagal DNS) kadang punya message kosong.
+    const detail = error.message || error.code || error.errors?.[0]?.message || String(error);
+    console.error(`MySQL gagal terhubung (${DB_TARGET}):`, detail);
   });
 
 module.exports = pool;

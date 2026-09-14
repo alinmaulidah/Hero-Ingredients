@@ -95,7 +95,7 @@ Klik **+ Add** untuk tiap baris di bawah. Isi kolom **Key** dan **Value**.
 | `DB_PASSWORD` | password MySQL dari langkah 2 | |
 | `DB_NAME` | `magna_ingredients` | |
 | `JWT_SECRET` | string acak min. 32 karakter | cara membuat: lihat kotak di bawah |
-| `PORT` | `8080` | |
+| `PORT` | `8080` | **harus sama dengan "Ports Exposes"** (langkah 3) |
 
 Membuat `JWT_SECRET` acak — jalankan di komputer (butuh Node.js):
 
@@ -278,9 +278,18 @@ Pastikan perubahan Dockerfile ini sudah ter-push, lalu **Deploy** ulang.
 **Deploy sukses tapi situs menampilkan 502 / Bad Gateway**
 → Port salah. Pastikan **Ports Exposes = 8080** dan **Domain Port = 8080**.
 
-**Log: `MySQL gagal terhubung`**
-→ `DB_HOST` masih `localhost`. Ganti dengan **Internal Hostname** database
-(langkah 2). Pastikan juga database sudah statusnya Running.
+**Healthcheck gagal: `wget: can't connect to remote host (127.0.0.1): Connection refused`**
+→ Aplikasi dan healthcheck memakai port berbeda (mis. app di `80`, healthcheck di
+`8080`) sehingga Coolify menandai container *unhealthy* dan mengembalikan versi lama.
+`HEALTHCHECK` di Dockerfile sudah mengikuti `$PORT`, jadi cukup pastikan nilai
+**`PORT`** (Environment Variables) **sama** dengan **Ports Exposes** — ubah salah
+satunya agar cocok, lalu **Deploy** ulang.
+
+**Log: `MySQL gagal terhubung (host:port)`**
+→ `DB_HOST` masih `localhost` atau bukan hostname database yang benar. Isi dengan
+**Internal Hostname** dari resource MySQL (halaman database → bagian Connection /
+General). Pastikan juga `DB_PORT=3306`, serta `DB_NAME`/`DB_USER`/`DB_PASSWORD`
+sama dengan yang tertulis di halaman itu, dan database berstatus Running.
 
 **Log: `Access denied for user 'hero'`**
 → `DB_USER`/`DB_PASSWORD` tidak cocok dengan yang ada di halaman database.
