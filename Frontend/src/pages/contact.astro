@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { company } from '../data/company';
 
-const { contact, address, hours, brand } = company;
+const { address, hours, brand } = company;
 ---
 
 <Layout title={`Hubungi Kami - ${brand.siteName}`}>
@@ -11,38 +11,9 @@ const { contact, address, hours, brand } = company;
     <section class="contact-section">
       <div class="container contact-grid">
 
-        <!-- INFORMASI PERUSAHAAN, JAM OPERASIONAL & MAP -->
+        <!-- JAM OPERASIONAL & LOKASI -->
         <div class="contact-info">
-          <h2 data-lang-id="Informasi Perusahaan" data-lang-en="Company Information">Informasi Perusahaan</h2>
-          <p class="company-desc" data-lang-id="Kami siap membantu menyediakan rantai pasok bahan baku alam berkualitas tinggi dan sesuai standar industri Anda." data-lang-en="We are ready to help supply high-quality natural raw materials that meet your industry standards.">
-            Kami siap membantu menyediakan rantai pasok bahan baku alam berkualitas tinggi dan sesuai standar industri Anda.
-          </p>
-
           <div class="info-list">
-            <!-- Alamat -->
-            <div class="info-item">
-              <div class="info-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              </div>
-              <div>
-                <span class="info-label">{address.factory.label}</span>
-                <p class="info-value"><strong>{address.factory.name}</strong></p>
-                <p class="info-value">{address.factory.street}</p>
-              </div>
-            </div>
-
-            <!-- Kontak -->
-            <div class="info-item">
-              <div class="info-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-              </div>
-              <div>
-                <span class="info-label" data-lang-id="Kontak Langsung" data-lang-en="Direct Contact">Kontak Langsung</span>
-                <p class="info-value">Telepon / WA: {contact.whatsappDisplay}</p>
-                <p class="info-value">Email: {contact.email}</p>
-              </div>
-            </div>
-
             <!-- Jam Operasional -->
             <div class="info-item">
               <div class="info-icon">
@@ -83,9 +54,8 @@ const { contact, address, hours, brand } = company;
         <!-- FORMULIR KONTAK -->
         <div class="contact-form-card">
           <h2 data-lang-id="Kirim Pesan" data-lang-en="Send a Message">Kirim Pesan</h2>
-          <p class="form-desc" data-lang-id="Isi formulir di bawah ini dan tim kami akan merespons dalam 1x24 jam." data-lang-en="Fill out the form below and our team will respond within 24 hours.">Isi formulir di bawah ini dan tim kami akan merespons dalam 1x24 jam.</p>
 
-          <form class="contact-form" onsubmit="event.preventDefault(); alert('Terima kasih! Pesan Anda telah terkirim.');">
+          <form class="contact-form">
             <div class="form-group">
               <label for="nama" data-lang-id="Nama Lengkap" data-lang-en="Full Name">Nama Lengkap *</label>
               <input type="text" id="nama" data-lang-id="Masukkan nama Anda" data-lang-en="Enter your name" placeholder="Masukkan nama Anda" required />
@@ -147,20 +117,6 @@ const { contact, address, hours, brand } = company;
   }
 
   /* INFORMASI PERUSAHAAN */
-  .contact-info h2 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--primary-dark);
-    margin-bottom: 0.5rem;
-  }
-
-  .company-desc {
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
-    margin-bottom: 2rem;
-  }
-
   .info-list {
     display: flex;
     flex-direction: column;

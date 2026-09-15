@@ -5,6 +5,7 @@
 # communication
 - User communicates in informal Indonesian (Bahasa Indonesia); match that language in replies and summaries. Confidence: 0.9
 - Gives the assistant latitude to adapt their input to the existing app structure ("list-nya disesuaikan lagi aja" — just adjust it accordingly) and goes along with the recommended options when the assistant offers choices, rather than prescribing exact implementation details. Confidence: 0.65
+- When the assistant asks for a credential/secret, typically replies with just the bare value (e.g. a raw API token as the entire message, no surrounding text or formatting) expecting the assistant to take it and proceed, so don't wait for an explicit "go ahead". Confidence: 0.5
 - For intern/stakeholder-facing deliverables (reporting a project up to a superior — "ngasi keatasan"), wants a formatted Word (.docx) document written in plain, non-technical Indonesian that illustrates every feature with a screenshot of the running app (real rendered pages, not mockups), and includes a recommendations section — not just a chat summary. Confidence: 0.5
 
 # environment
